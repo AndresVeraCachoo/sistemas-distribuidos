@@ -1,0 +1,41 @@
+-J-Duser.language=
+-J-Duser.country=
+@options
+@packages
+-encoding
+'UTF-8'
+-protected
+-source
+'1.8'
+-sourcepath
+'C:/Programas/eclipse-workspace/ejercicio_2/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2026. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'C:/Programas/eclipse-workspace/ejercicio_2/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Ejercicio 2 - Maven 1.0.0 API'
+-linkoffline
+'https://docs.oracle.com/javase/8/docs/api' 'C:/Programas/eclipse-workspace/ejercicio_2/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'Ejercicio 2 - Maven 1.0.0 API'
+ejercicio_2
+C:\Programas\eclipse-workspace\ejercicio_2\src\main\java = 1772203519543
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\allclasses-frame.html = 1772204607924
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\allclasses-noframe.html = 1772204607926
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\constant-values.html = 1772204607825
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\deprecated-list.html = 1772204607919
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\help-doc.html = 1772204607940
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\index-all.html = 1772204607876
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\index.html = 1772204607930
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\overview-tree.html = 1772204607866
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\package-list = 1772204607738
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\script.js = 1772204607952
+C:\Programas\eclipse-workspace\ejercicio_2\target\reports\apidocs\stylesheet.css = 1772204607950
