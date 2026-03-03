@@ -3,17 +3,18 @@ package es.ubu.lsi.client;
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import es.ubu.lsi.common.ChatMessage;
 import es.ubu.lsi.common.ChatMessage.MessageType;
 
 /**
  * Client.
- * 
- * @author http://www.dreamincode.net
+ * * @author http://www.dreamincode.net
  * @author Raúl Marticorena
  * @author Joaquin P. Seco
- *
+ * @author Andres
  */
 public class ChatClientImpl implements ChatClient {
 	
@@ -37,16 +38,32 @@ public class ChatClientImpl implements ChatClient {
 	/** Id. */
 	private int id;
 
+	/** Lista de usuarios baneados (ignorados). */
+	private Set<String> bannedUsers = new HashSet<String>();
+
+	/**
+	 * Añade un usuario a la lista de baneados.
+	 * @param userToBan nombre del usuario a ignorar
+	 */
+	public void banUser(String userToBan) {
+		this.bannedUsers.add(userToBan);
+	}
+
+	/**
+	 * Elimina un usuario de la lista de baneados.
+	 * @param userToUnban nombre del usuario a volver a leer
+	 */
+	public void unbanUser(String userToUnban) {
+		this.bannedUsers.remove(userToUnban);
+	}
+
 	/**
 	 * Constructor.
-	 * 
-	 * @param server server
+	 * * @param server server
 	 * @param port port
 	 * @param username user name
-	 * 
 	 */
 	public ChatClientImpl(String server, int port, String username) {
-		// which calls the common constructor with the GUI set to null
 		this.server = server;
 		this.port = port;
 		this.username = username;
@@ -54,20 +71,16 @@ public class ChatClientImpl implements ChatClient {
 
 	/**
 	 * Starts chat.
-	 * 
-	 * @return true if everything goes right, false in other case
+	 * * @return true if everything goes right, false in other case
 	 */
 	@Override
 	public boolean start() {
-		// try to connect to the server
 		try {
 			socket = new Socket(server, port);
-			String msg = "Connection accepted " + socket.getInetAddress() + ":"
-					+ socket.getPort();
+			String msg = "Connection accepted " + socket.getInetAddress() + ":" + socket.getPort();
 			display(msg);
 			sInput = new ObjectInputStream(socket.getInputStream());
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
-			
 		}
 		catch (IOException eIO) {
 			display("Exception creating new Input/output Streams: " + eIO);
@@ -77,7 +90,7 @@ public class ChatClientImpl implements ChatClient {
 			display("Error connectiong to server:" + ec);
 			return false;
 		}			
-		// Login and receive id
+		
 		try {			
 			sOutput.writeObject(username);	
 			sOutput.flush();
@@ -87,25 +100,22 @@ public class ChatClientImpl implements ChatClient {
 			disconnect();
 			return false;
 		}
-		// creates the Thread to listen from the server
+		
 		new Thread(new ChatClientListener()).start();
-		// success we inform the caller that it worked
 		return true;
 	}
 
 	/**
 	 * Displays messages.
-	 * 
-	 * @param msg text to show in console
+	 * * @param msg text to show in console
 	 */
 	private void display(String msg) {
-		System.out.println(msg); // println in console mode
+		System.out.println(msg); 
 	}
 
 	/**
 	 * Sends a message to the server.
-	 * 
-	 * @param msg message
+	 * * @param msg message
 	 */
 	@Override
 	public synchronized void sendMessage(ChatMessage msg) {
@@ -123,7 +133,6 @@ public class ChatClientImpl implements ChatClient {
 	 */
 	@Override
 	public void disconnect() {
-		
 		try {
 			display("Trying to disconnect and close client with username " + username);
 			if (sInput != null)  {
@@ -139,7 +148,6 @@ public class ChatClientImpl implements ChatClient {
 				socket = null;
 			}
 		} catch (Exception e) {
-			
 			display("Disconnect with error, closing resources, closed previously.");
 		}
 		finally{
@@ -150,109 +158,100 @@ public class ChatClientImpl implements ChatClient {
 
 	/**
 	 * Starts the client.
-	 * 
-	 * To start the Client in console mode use one of the following command >
-	 * java Client > java Client username > java Client username portNumber >
-	 * java Client username portNumber serverAddress at the console prompt If
-	 * the portNumber is not specified 1500 is used If the serverAddress is not
-	 * specified "localHost" is used If the username is not specified
-	 * "Anonymous" is used > java Client is equivalent to > java Client
-	 * Anonymous 1500 localhost are equivalent.
-	 * 
-	 * In console mode, if an error occurs the program simply stops when a GUI
-	 * id used, the GUI is informed of the disconnection
-	 * 
-	 * @param args arguments
+	 * * @param args arguments
 	 */
 	public static void main(String[] args) {
-		// default values
 		int portNumber = 1500;
 		String serverAddress = "localhost";
 		String userName = "Anonymous";
 
-		// depending of the number of arguments provided we fall through
 		switch (args.length) {
-		// > javac Client username portNumber serverAddr
 		case 3:
 			serverAddress = args[2];
-			// > javac Client username portNumber
 		case 2:
 			try {
 				portNumber = Integer.parseInt(args[1]);
 			} catch (Exception e) {
 				System.out.println("Invalid port number.");
-				System.out
-						.println("Usage is: > java Client [username] [portNumber] [serverAddress]");
 				return;
 			}
-			// > javac Client username
 		case 1:
 			userName = args[0];
-			// > java Client
 		case 0:
 			break;
-		// invalid number of arguments
 		default:
 			System.err.println("Usage is: > java Client [username] [portNumber] {serverAddress]");
 			return;
 		}
-		// create the Client object
+		
 		ChatClient client = new ChatClientImpl(serverAddress, portNumber, userName);
-		// test if we can start the connection to the Server
-		// if it failed nothing we can do
 		if (!client.start()) {
-			System.err.println("Error connecting server. Check network and server status.");
+			System.err.println("Error connecting server.");
 			return;
 		}
 
-		// wait for messages from user
 		ChatClientImpl clientChat = ((ChatClientImpl) client);
 		try (Scanner scan = new Scanner(System.in)) {
-			// loop forever for message from the user
 			while (clientChat.carryOn) {
 				System.out.print("> ");
-				// read message from user
 				String userMsg = scan.nextLine();
-				// logout if message is LOGOUT
-				if (userMsg.equalsIgnoreCase(MessageType.LOGOUT.toString())) {
-					client.sendMessage(new ChatMessage(clientChat.id, MessageType.LOGOUT,
-							MessageType.LOGOUT.toString()));
-					// break to do the disconnect
-					break;
-					
-				} else if (userMsg.equalsIgnoreCase(MessageType.SHUTDOWN.toString())) {
-					client.sendMessage(new ChatMessage(clientChat.id, MessageType.SHUTDOWN,
-							MessageType.SHUTDOWN.toString()));
-					// break to do the disconnect
-					break;
 				
-				} else { // default to ordinary message
-					client.sendMessage(new ChatMessage(clientChat.id, MessageType.MESSAGE, userMsg));
+				if (userMsg.equalsIgnoreCase(MessageType.LOGOUT.toString())) {
+					client.sendMessage(new ChatMessage(clientChat.id, MessageType.LOGOUT, MessageType.LOGOUT.toString()));
+					break;
+				} 
+				else if (userMsg.equalsIgnoreCase(MessageType.SHUTDOWN.toString())) {
+					client.sendMessage(new ChatMessage(clientChat.id, MessageType.SHUTDOWN, MessageType.SHUTDOWN.toString()));
+					break;
+				} 
+				// SISTEMA DE BANEO
+				else if (userMsg.toLowerCase().startsWith("ban ")) {
+					String userToBan = userMsg.substring(4).trim();
+					clientChat.banUser(userToBan);
+					// Avisa a todo el mundo que ha sido baneado
+					String banMsg = clientChat.username + " ha baneado a " + userToBan;
+					client.sendMessage(new ChatMessage(clientChat.id, MessageType.MESSAGE, banMsg));
+				} 
+				// SISTEMA DE DESBANEO
+				else if (userMsg.toLowerCase().startsWith("unban ")) {
+					String userToUnban = userMsg.substring(6).trim();
+					clientChat.unbanUser(userToUnban);
+					System.out.println("Has desbloqueado a " + userToUnban);
+				} 
+				// MENSAJE NORMAL CON SELLO DE AUTORÍA (REQUISITO PDF)
+				else { 
+					String watermarkMsg = clientChat.username + " patrocina el mensaje: " + userMsg;
+					client.sendMessage(new ChatMessage(clientChat.id, MessageType.MESSAGE, watermarkMsg));
 				}
 				System.out.println();
-			} // try with resources
+			}
 		}
-		// done disconnect by logout, not shutdown
 		client.disconnect();		
 	}
 
 	/**
 	 * Client listener for messages from server.
-	 * 
 	 */
 	class ChatClientListener implements Runnable {
 		
 		/**
-		 * Run.
+		 * Ejecuta el hilo de escucha para recibir mensajes del servidor.
 		 */
 		public void run() {
-			while (true) {
+			while (carryOn) {
 				try {
 					ChatMessage msg = (ChatMessage) sInput.readObject();
 					if (msg.getId() != id) {
-						// if console mode print the message and add back the prompt
-						System.out.println(msg.getMessage());
-						System.out.print("\n> ");
+						String fullText = msg.getMessage();
+						String sender = extractSender(fullText);
+						
+						// Si el usuario está en la lista negra, saltamos y no imprimimos
+						if (sender != null && bannedUsers.contains(sender)) {
+							continue; 
+						}
+						
+						System.out.println(fullText);
+						System.out.print("> ");
 					}
 						
 				} catch (IOException e) {
@@ -262,8 +261,23 @@ public class ChatClientImpl implements ChatClient {
 				} catch (ClassNotFoundException e2) {
 					throw new RuntimeException("Wrong message type", e2);
 				}
-			} // while
-		} // run
-	} // ChatClientListener
+			} 
+		} 
+		
+		/**
+		 * Extrae el nombre de usuario de un mensaje formateado por el servidor.
+		 * @param text mensaje completo recibido
+		 * @return el nombre de usuario, o null si es un mensaje del sistema
+		 */
+		private String extractSender(String text) {
+			if (text == null) return null;
+			String[] parts = text.split(" ", 3);
+			// El servidor añade "HH:mm:ss Usuario: Texto", buscamos la posición 1
+			if (parts.length >= 2 && parts[1].endsWith(":")) {
+				return parts[1].substring(0, parts[1].length() - 1);
+			}
+			return null;
+		}
+	} 
 
-} // ChatClient
+}
