@@ -3,8 +3,6 @@ package es.ubu.lsi.client;
 import java.net.*;
 import java.io.*;
 import java.util.*;
-import java.util.HashSet;
-import java.util.Set;
 
 import es.ubu.lsi.common.ChatMessage;
 import es.ubu.lsi.common.ChatMessage.MessageType;
@@ -19,9 +17,9 @@ import es.ubu.lsi.common.ChatMessage.MessageType;
 public class ChatClientImpl implements ChatClient {
 	
 	/** Input stream. */
-	private ObjectInputStream sInput; // to read from the socket
+	private ObjectInputStream sInput;
 	/** Output stream. */
-	private ObjectOutputStream sOutput; // to write on the socket
+	private ObjectOutputStream sOutput;
 	/** Socket. */
 	private Socket socket;
 
@@ -39,7 +37,19 @@ public class ChatClientImpl implements ChatClient {
 	private int id;
 
 	/** Lista de usuarios baneados (ignorados). */
-	private Set<String> bannedUsers = new HashSet<String>();
+	private Set<String> bannedUsers = new HashSet<>();
+
+	/**
+	 * Constructor.
+	 * @param server server
+	 * @param port port
+	 * @param username user name
+	 */
+	public ChatClientImpl(String server, int port, String username) {
+		this.server = server;
+		this.port = port;
+		this.username = username;
+	}
 
 	/**
 	 * Añade un usuario a la lista de baneados.
@@ -58,36 +68,21 @@ public class ChatClientImpl implements ChatClient {
 	}
 
 	/**
-	 * Constructor.
-	 * * @param server server
-	 * @param port port
-	 * @param username user name
-	 */
-	public ChatClientImpl(String server, int port, String username) {
-		this.server = server;
-		this.port = port;
-		this.username = username;
-	}
-
-	/**
 	 * Starts chat.
-	 * * @return true if everything goes right, false in other case
+	 * @return true if everything goes right, false in other case
 	 */
 	@Override
 	public boolean start() {
 		try {
 			socket = new Socket(server, port);
-			String msg = "Connection accepted " + socket.getInetAddress() + ":" + socket.getPort();
-			display(msg);
+			display("Connection accepted " + socket.getInetAddress() + ":" + socket.getPort());
 			sInput = new ObjectInputStream(socket.getInputStream());
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
-		}
-		catch (IOException eIO) {
+		} catch (IOException eIO) {
 			display("Exception creating new Input/output Streams: " + eIO);
 			return false;
-		}
-		catch (Exception ec) {
-			display("Error connectiong to server:" + ec);
+		} catch (Exception ec) {
+			display("Error connecting to server:" + ec);
 			return false;
 		}			
 		
@@ -107,7 +102,7 @@ public class ChatClientImpl implements ChatClient {
 
 	/**
 	 * Displays messages.
-	 * * @param msg text to show in console
+	 * @param msg text to show in console
 	 */
 	private void display(String msg) {
 		System.out.println(msg); 
@@ -115,7 +110,7 @@ public class ChatClientImpl implements ChatClient {
 
 	/**
 	 * Sends a message to the server.
-	 * * @param msg message
+	 * @param msg message
 	 */
 	@Override
 	public synchronized void sendMessage(ChatMessage msg) {
@@ -135,30 +130,69 @@ public class ChatClientImpl implements ChatClient {
 	public void disconnect() {
 		try {
 			display("Trying to disconnect and close client with username " + username);
-			if (sInput != null)  {
-				sInput.close();
-				sInput = null;
-			}
-			if (sOutput != null) {
-				sOutput.close();
-				sOutput = null;
-			}
-			if (socket != null && !socket.isClosed()) {
-				socket.close();
-				socket = null;
-			}
+			if (sInput != null) sInput.close();
+			if (sOutput != null) sOutput.close();
+			if (socket != null && !socket.isClosed()) socket.close();
 		} catch (Exception e) {
 			display("Disconnect with error, closing resources, closed previously.");
-		}
-		finally{
+		} finally {
 			display("Bye!");
 			carryOn = false;
 		}
 	}
 
 	/**
+	 * Procesa el input del usuario y lo enruta al tipo de mensaje adecuado.
+	 * @param userMsg mensaje crudo del usuario
+	 * @param client instancia del cliente para enviar
+	 */
+	private void processUserInput(String userMsg, ChatClient client) {
+		if (userMsg.equalsIgnoreCase(MessageType.LOGOUT.toString())) {
+			client.sendMessage(new ChatMessage(id, MessageType.LOGOUT, ""));
+			this.carryOn = false;
+		} else if (userMsg.equalsIgnoreCase(MessageType.SHUTDOWN.toString())) {
+			client.sendMessage(new ChatMessage(id, MessageType.SHUTDOWN, ""));
+			this.carryOn = false;
+		} else if (userMsg.toLowerCase().startsWith("ban ")) {
+			String userToBan = userMsg.substring(4).trim();
+			banUser(userToBan);
+			// Mensaje del sistema sin destinatario
+			client.sendMessage(new ChatMessage(id, MessageType.MESSAGE, username + " ha baneado a " + userToBan));
+		} else if (userMsg.toLowerCase().startsWith("unban ")) {
+			String userToUnban = userMsg.substring(6).trim();
+			unbanUser(userToUnban);
+			System.out.println("Has desbloqueado a " + userToUnban);
+		} else if (userMsg.toLowerCase().startsWith("todos ")) {
+			String text = userMsg.substring(6).trim();
+			String wm = username + " patrocina el mensaje: " + text;
+			client.sendMessage(new ChatMessage(id, MessageType.MESSAGE, wm));
+		} else {
+			sendPrivateMessage(userMsg, client);
+		}
+	}
+
+	/**
+	 * Envía un mensaje privado separando el destinatario del texto.
+	 * @param userMsg mensaje crudo
+	 * @param client cliente para envío
+	 */
+	private void sendPrivateMessage(String userMsg, ChatClient client) {
+		String[] parts = userMsg.split(" ", 2);
+		if (parts.length < 2) {
+			System.out.println("❌ Formato incorrecto. Usa: 'Destinatario mensaje' o 'todos mensaje'");
+		} else {
+			String targetUser = parts[0];
+			String wm = username + " patrocina el mensaje: " + parts[1];
+			
+			ChatMessage msg = new ChatMessage(id, MessageType.MESSAGE, wm);
+			msg.setReceiver(targetUser); 
+			client.sendMessage(msg);
+		}
+	}
+
+	/**
 	 * Starts the client.
-	 * * @param args arguments
+	 * @param args arguments
 	 */
 	public static void main(String[] args) {
 		int portNumber = 1500;
@@ -166,64 +200,25 @@ public class ChatClientImpl implements ChatClient {
 		String userName = "Anonymous";
 
 		switch (args.length) {
-		case 3:
-			serverAddress = args[2];
+		case 3: serverAddress = args[2];
 		case 2:
-			try {
-				portNumber = Integer.parseInt(args[1]);
-			} catch (Exception e) {
-				System.out.println("Invalid port number.");
-				return;
-			}
-		case 1:
-			userName = args[0];
-		case 0:
-			break;
+			try { portNumber = Integer.parseInt(args[1]); } 
+			catch (Exception e) { System.out.println("Invalid port number."); return; }
+		case 1: userName = args[0];
+		case 0: break;
 		default:
-			System.err.println("Usage is: > java Client [username] [portNumber] {serverAddress]");
+			System.err.println("Usage is: > java Client [username] [portNumber] [serverAddress]");
 			return;
 		}
 		
 		ChatClient client = new ChatClientImpl(serverAddress, portNumber, userName);
-		if (!client.start()) {
-			System.err.println("Error connecting server.");
-			return;
-		}
+		if (!client.start()) return;
 
 		ChatClientImpl clientChat = ((ChatClientImpl) client);
 		try (Scanner scan = new Scanner(System.in)) {
 			while (clientChat.carryOn) {
 				System.out.print("> ");
-				String userMsg = scan.nextLine();
-				
-				if (userMsg.equalsIgnoreCase(MessageType.LOGOUT.toString())) {
-					client.sendMessage(new ChatMessage(clientChat.id, MessageType.LOGOUT, MessageType.LOGOUT.toString()));
-					break;
-				} 
-				else if (userMsg.equalsIgnoreCase(MessageType.SHUTDOWN.toString())) {
-					client.sendMessage(new ChatMessage(clientChat.id, MessageType.SHUTDOWN, MessageType.SHUTDOWN.toString()));
-					break;
-				} 
-				// SISTEMA DE BANEO
-				else if (userMsg.toLowerCase().startsWith("ban ")) {
-					String userToBan = userMsg.substring(4).trim();
-					clientChat.banUser(userToBan);
-					// Avisa a todo el mundo que ha sido baneado
-					String banMsg = clientChat.username + " ha baneado a " + userToBan;
-					client.sendMessage(new ChatMessage(clientChat.id, MessageType.MESSAGE, banMsg));
-				} 
-				// SISTEMA DE DESBANEO
-				else if (userMsg.toLowerCase().startsWith("unban ")) {
-					String userToUnban = userMsg.substring(6).trim();
-					clientChat.unbanUser(userToUnban);
-					System.out.println("Has desbloqueado a " + userToUnban);
-				} 
-				// MENSAJE NORMAL CON SELLO DE AUTORÍA (REQUISITO PDF)
-				else { 
-					String watermarkMsg = clientChat.username + " patrocina el mensaje: " + userMsg;
-					client.sendMessage(new ChatMessage(clientChat.id, MessageType.MESSAGE, watermarkMsg));
-				}
-				System.out.println();
+				clientChat.processUserInput(scan.nextLine(), client);
 			}
 		}
 		client.disconnect();		
@@ -235,7 +230,7 @@ public class ChatClientImpl implements ChatClient {
 	class ChatClientListener implements Runnable {
 		
 		/**
-		 * Ejecuta el hilo de escucha para recibir mensajes del servidor.
+		 * Ejecuta el hilo de escucha para recibir mensajes.
 		 */
 		public void run() {
 			while (carryOn) {
@@ -245,15 +240,13 @@ public class ChatClientImpl implements ChatClient {
 						String fullText = msg.getMessage();
 						String sender = extractSender(fullText);
 						
-						// Si el usuario está en la lista negra, saltamos y no imprimimos
 						if (sender != null && bannedUsers.contains(sender)) {
 							continue; 
 						}
 						
-						System.out.println(fullText);
+						System.out.print(fullText);
 						System.out.print("> ");
 					}
-						
 				} catch (IOException e) {
 					display("Server has closed the connection. ");
 					carryOn = false;
@@ -265,19 +258,17 @@ public class ChatClientImpl implements ChatClient {
 		} 
 		
 		/**
-		 * Extrae el nombre de usuario de un mensaje formateado por el servidor.
-		 * @param text mensaje completo recibido
-		 * @return el nombre de usuario, o null si es un mensaje del sistema
+		 * Extrae el nombre de usuario de un mensaje del servidor.
+		 * @param text mensaje completo
+		 * @return el nombre de usuario
 		 */
 		private String extractSender(String text) {
 			if (text == null) return null;
 			String[] parts = text.split(" ", 3);
-			// El servidor añade "HH:mm:ss Usuario: Texto", buscamos la posición 1
 			if (parts.length >= 2 && parts[1].endsWith(":")) {
 				return parts[1].substring(0, parts[1].length() - 1);
 			}
 			return null;
 		}
 	} 
-
 }

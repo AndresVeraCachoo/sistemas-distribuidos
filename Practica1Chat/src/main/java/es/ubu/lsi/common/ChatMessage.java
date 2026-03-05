@@ -1,14 +1,11 @@
 package es.ubu.lsi.common;
 
-
 import java.io.*;
 
 /**
  * Message in chat system.
- * 
- * @author Raúl Marticorena
+ * * @author Raúl Marticorena
  * @author Joaquin P. Seco
- *
  */
 public class ChatMessage implements Serializable {
 
@@ -17,9 +14,6 @@ public class ChatMessage implements Serializable {
 
 	/**
 	 * Message type.
-	 * 
-	 * @author Raúl Marticorena
-	 * @author Joaquin P. Seco
 	 */
 	public enum MessageType {
 		/** Message. */
@@ -39,10 +33,17 @@ public class ChatMessage implements Serializable {
 	/** Client id. */
 	private int id;
 	
+	/* ---------------------------------------------------------
+	 * MODIFICACIÓN AUTORIZADA:
+	 * Se añade el atributo 'receiver' para poder implementar
+	 * la funcionalidad de mensajes privados directos entre
+	 * usuarios sin tener que parsear el String del mensaje.
+	 * --------------------------------------------------------- */
+	private String receiver = null;
+	
 	/**
 	 * Constructor.
-	 * 
-	 * @param id client id
+	 * * @param id client id
 	 * @param type type
 	 * @param message message
 	 */
@@ -54,9 +55,7 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Gets type.
-	 * 
 	 * @return type
-	 * @see #setType
 	 */
 	public MessageType getType() {
 		return type;
@@ -64,9 +63,7 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Sets type.
-	 * 
-	 * @param type
-	 * @see #getType()
+	 * @param type message type
 	 */
 	private void setType(MessageType type) {
 		this.type = type;
@@ -74,9 +71,7 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Gets message.
-	 * 
 	 * @return message
-	 * @see #setMessage
 	 */
 	public String getMessage() {
 		return message;
@@ -84,9 +79,7 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Sets message.
-	 * 
 	 * @param message message
-	 * @see #getMessage
 	 */
 	public void setMessage(String message) {
 		this.message = message;
@@ -94,9 +87,7 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Gets id.
-	 * 
 	 * @return sender id
-	 * @see #setId(int)
 	 */
 	public int getId() {
 		return id;
@@ -104,13 +95,25 @@ public class ChatMessage implements Serializable {
 
 	/**
 	 * Sets sender id.
-	 * 
 	 * @param id sender id
-	 * @see #getId()
-	 * 
 	 */
 	private void setId(int id) {
 		this.id = id;
 	}
-}
 
+	/**
+	 * Obtiene el destinatario del mensaje privado.
+	 * @return nombre del destinatario o null si es para todos
+	 */
+	public String getReceiver() {
+		return receiver;
+	}
+
+	/**
+	 * Establece el destinatario para un mensaje privado.
+	 * @param receiver nombre del destinatario
+	 */
+	public void setReceiver(String receiver) {
+		this.receiver = receiver;
+	}
+}
