@@ -36,8 +36,8 @@ public class ChatMessage implements Serializable {
 	/* ---------------------------------------------------------
 	 * MODIFICACIÓN AUTORIZADA:
 	 * Se añade el atributo 'receiver' para poder implementar
-	 * la funcionalidad de mensajes privados directos entre
-	 * usuarios sin tener que parsear el String del mensaje.
+	 * la funcionalidad de mensajes privados y multicast directo 
+	 * entre usuarios sin tener que parsear el String del mensaje.
 	 * --------------------------------------------------------- */
 	private String receiver = null;
 	
@@ -102,16 +102,17 @@ public class ChatMessage implements Serializable {
 	}
 
 	/**
-	 * Obtiene el destinatario del mensaje privado.
-	 * @return nombre del destinatario o null si es para todos
+	 * Obtiene el destinatario o destinatarios del mensaje.
+	 * @return nombre del destinatario(s) o null si es para todos
 	 */
 	public String getReceiver() {
 		return receiver;
 	}
 
 	/**
-	 * Establece el destinatario para un mensaje privado.
-	 * @param receiver nombre del destinatario
+	 * Establece el destinatario para un mensaje privado o multicast.
+	 * Puede recibir varios usuarios separados por coma.
+	 * @param receiver nombre de los destinatarios
 	 */
 	public void setReceiver(String receiver) {
 		this.receiver = receiver;

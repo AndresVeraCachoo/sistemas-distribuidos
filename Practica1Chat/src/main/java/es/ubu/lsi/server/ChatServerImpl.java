@@ -10,50 +10,26 @@ import es.ubu.lsi.common.ChatMessage.MessageType;
 
 /**
  * Chat server. 
- * * @author http://www.dreamincode.net
+ * @author http://www.dreamincode.net
  * @author Raúl Marticorena
  * @author Joaquin P. Seco
  * @author Andres
  */
 public class ChatServerImpl implements ChatServer {
 
-	/** Default port. */
 	private static final int DEFAULT_PORT = 1500;
-	
-	/** Unique ID for each connection.*/	
 	private static int clientId;
-	
-	/** Client list. */
 	private List<ServerThreadForClient> clients;
-	
-	/** Util class to display time. */
-	private static SimpleDateFormat sdf;
-	
-	/** Port number to listen for connection. */
+	private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 	private int port;
-	
-	/** Flag will be turned of to stop the server. */
 	private boolean alive;
-	
-	/** Server socket. */
 	private ServerSocket serverSocket; 
-	
-	static {
-		 sdf = new SimpleDateFormat("HH:mm:ss");
-	}
 
-	/**
-	 * Constructor.
-	 * @param port port to listen
-	 */
 	public ChatServerImpl(int port) {
 		this.port = port;
 		clients = new ArrayList<>();
 	}
 
-	/**
-	 * Starts the server.
-	 */
 	@Override
 	public void startup() {
 		alive = true;
@@ -64,8 +40,11 @@ public class ChatServerImpl implements ChatServer {
 				Socket socket = serverSocket.accept();
 				if (!alive) break;
 				ServerThreadForClient t = new ServerThreadForClient(socket); 
-				clients.add(t);
-				t.start();
+				
+				if (!socket.isClosed()) {
+					clients.add(t);
+					t.start();
+				}
 			}
 			shutdown();
 		} catch (IOException e) {
@@ -73,40 +52,29 @@ public class ChatServerImpl implements ChatServer {
 		}
 	}
 
-	/**
-	 * Closes server.
-	 */
 	@Override
 	public synchronized void shutdown() {
 		try {
 			serverSocket.close();
 			for (int i = 0; i < clients.size(); ++i) {
-				ServerThreadForClient tc = clients.get(i);
-				try {
-					tc.sInput.close();
-					tc.sOutput.close();
-					tc.socket.close();
-				} catch (IOException ioE) {
-					System.err.printf("Error closing streams for client %d", i);
-				}
+				clients.get(i).close();
 			}
 		} catch (Exception e) {
 			show("Exception closing the server and clients: " + e);
 		}
 	}
 	
-	/**
-	 * Shows an event.
-	 * @param event event
-	 */
 	private void show(String event) {
 		System.out.println(sdf.format(new Date()) + " " + event);
 	}
 
-	/**
-	 * Broadcasts a message to all clients.
-	 * @param message message
-	 */
+	private synchronized boolean isUsernameTaken(String name) {
+		for (ServerThreadForClient c : clients) {
+			if (c.username != null && c.username.equalsIgnoreCase(name)) return true;
+		}
+		return false;
+	}
+
 	@Override
 	public synchronized void broadcast(ChatMessage message) {
 		String time = sdf.format(new Date());
@@ -123,38 +91,58 @@ public class ChatServerImpl implements ChatServer {
 		}
 	}
 
-	/**
-	 * Envia un mensaje privado a un cliente específico y al emisor.
-	 * @param targetUser nombre del destinatario
-	 * @param message mensaje a enviar
-	 * @param sender hilo del cliente que envía
-	 */
-	public synchronized void sendPrivateMessage(String targetUser, ChatMessage message, ServerThreadForClient sender) {
+	public synchronized void sendPrivateMessage(String targetUsers, ChatMessage message, ServerThreadForClient sender) {
 		String time = sdf.format(new Date());
 		String messageLf = time + " " + message.getMessage() + "\n";
 		message.setMessage(messageLf);
 		System.out.print(messageLf);
 		
-		boolean found = false;
+		List<String> targetsList = Arrays.asList(targetUsers.split(","));
+		
 		for (int i = clients.size(); --i >= 0;) {
 			ServerThreadForClient ct = clients.get(i);
-			if (ct.username.equals(targetUser) || ct == sender) {
+			if (targetsList.contains(ct.username) || ct == sender) {
 				if (!ct.sendMessage(message)) {
 					clients.remove(i);
+				} else if (ct.isAfk && ct != sender) {
+					sender.sendMessage(new ChatMessage(0, MessageType.MESSAGE, "Sistema: " + ct.username + " está AFK.\n"));
 				}
-				if (ct.username.equals(targetUser)) found = true;
 			}
 		}
-		if (!found) {
-			ChatMessage error = new ChatMessage(0, MessageType.MESSAGE, "Sistema: El usuario " + targetUser + " no existe.\n");
-			sender.sendMessage(error);
+	}
+	
+	private synchronized void processServerCommand(String cmd, ServerThreadForClient sender) {
+		if (cmd.equals("WHO")) {
+			StringBuilder sb = new StringBuilder("Conectados: ");
+			for (ServerThreadForClient c : clients) {
+				sb.append(c.username).append(c.isAfk ? "(AFK), " : ", ");
+			}
+			sender.sendMessage(new ChatMessage(0, MessageType.MESSAGE, "Sistema: " + sb.toString() + "\n"));
+			
+		} else if (cmd.equals("AFK")) {
+			sender.isAfk = !sender.isAfk;
+			String status = sender.isAfk ? "ausente" : "disponible";
+			sender.sendMessage(new ChatMessage(0, MessageType.MESSAGE, "Sistema: Ahora estás " + status + ".\n"));
+			
+		} else if (cmd.startsWith("KICK|")) {
+			kickUser(cmd.substring(5), sender);
 		}
 	}
 
-	/**
-	 * Removes a logout client.
-	 * @param id client id
-	 */
+	private synchronized void kickUser(String target, ServerThreadForClient sender) {
+		for (int i = 0; i < clients.size(); i++) {
+			ServerThreadForClient ct = clients.get(i);
+			if (ct.username.equalsIgnoreCase(target)) {
+				ct.sendMessage(new ChatMessage(0, MessageType.MESSAGE, "Sistema: Has sido expulsado del servidor.\n"));
+				ct.close(); 
+				clients.remove(i);
+				broadcast(new ChatMessage(0, MessageType.MESSAGE, "Sistema: " + target + " fue expulsado por " + sender.username + "\n"));
+				return;
+			}
+		}
+		sender.sendMessage(new ChatMessage(0, MessageType.MESSAGE, "Sistema: Usuario no encontrado.\n"));
+	}
+
 	@Override
 	public synchronized void remove(int id) {
 		for (int i = 0; i < clients.size(); ++i) {
@@ -165,36 +153,23 @@ public class ChatServerImpl implements ChatServer {
 		}
 	}
 
-	/** * Runs the server.
-	 * @param args arguments
-	 */
 	public static void main(String[] args) {
 		int portNumber = DEFAULT_PORT;
 		if (args.length == 1) {
-			try {
-				portNumber = Integer.parseInt(args[0]);
-			} catch (Exception e) {
-				System.err.println("Invalid port number.");
-				return;
-			}
+			try { portNumber = Integer.parseInt(args[0]); } 
+			catch (Exception e) { return; }
 		}
-		ChatServer server = new ChatServerImpl(portNumber);
-		server.startup();
+		new ChatServerImpl(portNumber).startup();
 	}
 
-	/** * Thread for each client. 
-	 */
 	class ServerThreadForClient extends Thread {
 		Socket socket;
 		ObjectInputStream sInput;
 		ObjectOutputStream sOutput;
 		int id;
 		String username;
+		boolean isAfk = false;
 
-		/**
-		 * Constructor. 
-		 * @param socket socket
-		 */
 		ServerThreadForClient(Socket socket) {
 			id = ++clientId;
 			this.socket = socket;
@@ -202,6 +177,15 @@ public class ChatServerImpl implements ChatServer {
 				sOutput = new ObjectOutputStream(socket.getOutputStream());
 				sInput = new ObjectInputStream(socket.getInputStream());
 				username = (String) sInput.readObject();
+				
+				if (isUsernameTaken(username)) {
+					show("⚠️ Intento de conexión rechazado: el usuario '" + username + "' ya está en el servidor.");
+					sOutput.writeInt(-1); 
+					sOutput.flush();
+					close();
+					return;
+				}
+				
 				sOutput.writeInt(id);
 				sOutput.flush();
 				show(username + " just connected.");	
@@ -211,9 +195,6 @@ public class ChatServerImpl implements ChatServer {
 			}
 		}
 
-		/**
-		 * Run method.
-		 */
 		public void run() {
 			boolean runningThread = true;
 			while (runningThread) {
@@ -229,11 +210,6 @@ public class ChatServerImpl implements ChatServer {
 			if (!alive) shutdown();
 		}		
 
-		/**
-		 * Procesa el mensaje recibido del cliente según su tipo.
-		 * @param msg mensaje recibido
-		 * @return true si debe seguir escuchando
-		 */
 		private boolean processMessage(ChatMessage msg) {
 			switch (msg.getType()) {
 			case SHUTDOWN:
@@ -250,16 +226,14 @@ public class ChatServerImpl implements ChatServer {
 			return true;
 		}
 
-		/**
-		 * Enruta un mensaje de chat comprobando si tiene destinatario.
-		 * @param msg mensaje recibido
-		 */
 		private void routeChatMessage(ChatMessage msg) {
 			String text = msg.getMessage();
 			String target = msg.getReceiver();
 			
-			if (target != null) {
-				msg.setMessage(username + " (Privado para " + target + "): " + text);
+			if ("server".equals(target)) {
+				processServerCommand(text, this);
+			} else if (target != null) {
+				msg.setMessage(username + " (Privado): " + text);
 				sendPrivateMessage(target, msg, this);
 			} else {
 				msg.setMessage(username + ": " + text);
@@ -267,11 +241,6 @@ public class ChatServerImpl implements ChatServer {
 			}
 		}
 
-		/**
-		 * Write a message to the client.
-		 * @param msg message
-		 * @return true if sent
-		 */
 		boolean sendMessage(ChatMessage msg) {
 			if (!socket.isConnected()) {
 				close();
@@ -285,17 +254,12 @@ public class ChatServerImpl implements ChatServer {
 			}
 		} 
 		
-		/**
-		 * Close streams and socket.
-		 */
-		private void close() {
+		void close() {
 			try {				
 				if (sOutput != null) sOutput.close();
 				if (sInput != null) sInput.close();
 				if (socket != null && !socket.isClosed()) socket.close();
-			} catch (Exception e) {
-				show("Closed streams");
-			}
+			} catch (Exception e) {}
 		}
 	}
 }
