@@ -9,7 +9,17 @@ import es.ubu.lsi.common.ChatMessage.MessageType;
 
 /**
  * Client.
- * @author http://www.dreamincode.net
+ * * -------------------------------------------------------------------
+ * EXTRA FEATURES Y COMANDOS DEL CLIENTE:
+ * - "todos [mensaje]": Envía un mensaje Broadcast a toda la sala.
+ * - "[usuario] [mensaje]": Envía un mensaje Privado (Unicast).
+ * - "[usr1],[usr2] [msg]": Envía a varios usuarios (Multicast).
+ * - "who": Solicita al servidor la lista de usuarios activos.
+ * - "afk": Cambia tu estado a ausente/disponible.
+ * - "ban [usuario]" / "unban [usuario]": Ignora localmente a un usuario.
+ * - "kick [usuario]": Ordena al servidor expulsar la conexión de un usuario.
+ * -------------------------------------------------------------------
+ * * @author http://www.dreamincode.net
  * @author Raúl Marticorena
  * @author Joaquin P. Seco
  * @author Andres

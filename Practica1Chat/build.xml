@@ -8,7 +8,7 @@ Chat - Practica 1 - Sistemas Distribuidos  - GII - 2013-2014
 
 	<!-- Dir properties -->
 	<property name="name.game" value="chat" />
-	<property name="src.dir" value="${basedir}/src" />
+	<property name="src.dir" value="${basedir}/src/main/java" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="dist.dir" value="${basedir}/dist" />
 	<property name="doc.dir" value="${basedir}/doc" />

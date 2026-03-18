@@ -9,8 +9,19 @@ import es.ubu.lsi.common.ChatMessage;
 import es.ubu.lsi.common.ChatMessage.MessageType;
 
 /**
- * Chat server. 
- * @author http://www.dreamincode.net
+ * Chat server.
+ * * -------------------------------------------------------------------
+ * EXTRA FEATURES IMPLEMENTADAS EN ESTA PRÁCTICA:
+ * 1. Multicast Directo: Envío a múltiples usuarios a la vez separando
+ * los nombres por comas en el destinatario (ej. "Pedro,Maria").
+ * 2. Control de Duplicados: El servidor rechaza y avisa a los clientes
+ * que intentan conectarse con un nombre ya en uso.
+ * 3. Comando WHO: Permite al cliente solicitar la lista de conectados.
+ * 4. Comando AFK: Gestión de estados. Avisa automáticamente si un
+ * usuario está ausente cuando se le intenta enviar un privado.
+ * 5. Comando KICK: Expulsión forzada de clientes desde el servidor.
+ * -------------------------------------------------------------------
+ * * @author http://www.dreamincode.net
  * @author Raúl Marticorena
  * @author Joaquin P. Seco
  * @author Andres
