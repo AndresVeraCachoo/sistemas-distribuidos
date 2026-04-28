@@ -1,0 +1,16 @@
+# Entornos virtuales de Python
+venv/
+.venv/
+env/
+
+# Archivos de entorno y secretos
+.env
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

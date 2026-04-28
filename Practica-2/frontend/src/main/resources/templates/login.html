@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PokeApp - Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+      .login-card {
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 40px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .error {
+        color: red;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card login-card">
+        <h2>Iniciar Sesión</h2>
+        <div th:if="${param.error}" class="error">
+          Usuario o contraseña incorrectos.
+        </div>
+        <div th:if="${param.logout}" style="color: green">
+          Sesión cerrada con éxito.
+        </div>
+
+        <form th:action="@{/login}" method="post">
+          <div class="form-group">
+            <label>Usuario:</label>
+            <input type="text" name="username" required autofocus />
+          </div>
+          <div class="form-group">
+            <label>Contraseña:</label>
+            <input type="password" name="password" required />
+          </div>
+          <button type="submit" class="btn-search" style="width: 100%">
+            Entrar
+          </button>
+        </form>
+        <p style="margin-top: 20px; font-size: 0.9em; color: #666">
+          Tip: Usa <b>admin</b> / <b>admin123</b>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

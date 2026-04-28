@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PokeApp - Buscador</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+  </head>
+  <body>
+    <header class="navbar">
+      <div class="logo">PokeApp</div>
+      <nav class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/perfil" class="profile-link">
+          <img
+            th:src="@{/img/icono-perfil.png}"
+            alt="Perfil"
+            class="profile-icon"
+          />
+          <span th:text="${username}">Usuario</span>
+        </a>
+        <form th:action="@{/logout}" method="post" style="display: inline">
+          <button type="submit" class="btn-logout">Salir</button>
+        </form>
+      </nav>
+    </header>
+
+    <main class="container">
+      <h1>Buscador de Pokémon</h1>
+      <p>
+        Busca cualquier Pokémon para ver sus detalles desde la API de Python.
+      </p>
+
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Ej: Pikachu, Charizard..."
+          id="pokemonSearch"
+        />
+        <button class="btn-search">Buscar</button>
+      </div>
+
+      <section class="results-placeholder">
+        <div class="card">
+          <h3>Resultado</h3>
+          <p>Aquí aparecerán los datos cuando conectemos la API.</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
