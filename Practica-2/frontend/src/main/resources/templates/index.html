@@ -1,50 +1,59 @@
 <!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <title>PokeApp - Buscador</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
-  </head>
-  <body>
-    <header class="navbar">
-      <div class="logo">PokeApp</div>
-      <nav class="nav-links">
-        <a href="/">Inicio</a>
-        <a href="/perfil" class="profile-link">
-          <img
-            th:src="@{/img/icono-perfil.png}"
-            alt="Perfil"
-            class="profile-icon"
-          />
-          <span th:text="${username}">Usuario</span>
-        </a>
-        <form th:action="@{/logout}" method="post" style="display: inline">
-          <button type="submit" class="btn-logout">Salir</button>
-        </form>
-      </nav>
-    </header>
-
-    <main class="container">
-      <h1>Buscador de Pokémon</h1>
-      <p>
-        Busca cualquier Pokémon para ver sus detalles desde la API de Python.
-      </p>
-
-      <div class="search-box">
-        <input
-          type="text"
-          placeholder="Ej: Pikachu, Charizard..."
-          id="pokemonSearch"
-        />
-        <button class="btn-search">Buscar</button>
-      </div>
-
-      <section class="results-placeholder">
-        <div class="card">
-          <h3>Resultado</h3>
-          <p>Aquí aparecerán los datos cuando conectemos la API.</p>
+<head>
+  <meta charset="UTF-8" />
+  <title>PokeApp - Buscador</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <style>
+    .pokemon-card { text-align: center; margin-top: 20px; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
+    .pokemon-card img { width: 180px; height: 180px; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.2)); }
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; text-align: left; background: #fdfdfd; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
+    .error-card { background: #ffebee; color: #c62828; padding: 20px; border-radius: 8px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">PokeApp</div>
+    <nav class="nav-links">
+      <a href="/">Inicio</a>
+      <div class="profile-container" th:if="${usuario != null}">
+        <div class="profile-trigger">
+          <img th:src="${usuario.avatarUrl}" alt="Icono" class="profile-icon" />
         </div>
-      </section>
-    </main>
-  </body>
+        <div class="dropdown-content">
+          <a href="/perfil">Mi Perfil</a>
+          <a href="/historial">Estad. Entrenador</a>
+          <form th:action="@{/logout}" method="post">
+            <button type="submit">Cerrar Sesión</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Buscador de Pokémon</h1>
+    <form th:action="@{/}" method="get" class="search-box">
+      <input type="text" name="name" placeholder="Ej: Mewtwo, Bulbasaur..." required />
+      <button type="submit" class="btn-search">Buscar Pokémon</button>
+    </form>
+
+    <section th:if="${pokemon != null}" class="results">
+      <div th:if="${pokemon.containsKey('error')}" class="error-card">
+        <h3 th:text="${pokemon.get('error')}">Error en la consulta</h3>
+      </div>
+      <div th:if="${!pokemon.containsKey('error')}" class="card pokemon-card">
+        <img th:src="${pokemon.get('sprite')}" th:alt="${pokemon.get('name')}">
+        <h2 th:text="${pokemon.get('name')} + ' (#' + ${pokemon.get('id')} + ')'">Nombre</h2>
+        <p><b>Tipos:</b> <span th:each="tipo : ${pokemon.get('types')}" th:text="${tipo} + ' ' "></span></p>
+        <div class="stats">
+          <div th:each="stat : ${pokemon.get('stats')}">
+            <strong th:text="${stat.key} + ':'">Stat:</strong> 
+            <span th:text="${stat.value}">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
 </html>

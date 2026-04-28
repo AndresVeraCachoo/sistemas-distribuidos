@@ -22,7 +22,8 @@ public class Usuario {
     private String email;
 
     private String nombre;
-
-    // Campo para identificar si es un usuario de sistema (no borrable)
     private boolean esProtegido = false;
+
+    // Guardamos la foto elegida (por defecto el icono gris)
+    private String avatarUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
 }

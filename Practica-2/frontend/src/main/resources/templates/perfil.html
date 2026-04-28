@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>PokeApp - Mi Perfil</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">PokeApp</div>
+    <nav class="nav-links">
+      <a href="/">Inicio</a>
+      <div class="profile-container" th:if="${usuario != null}">
+        <div class="profile-trigger">
+          <img th:src="${usuario.avatarUrl}" alt="Icono" class="profile-icon" />
+        </div>
+        <div class="dropdown-content">
+          <a href="/perfil">Mi Perfil</a>
+          <a href="/historial">Estad. Entrenador</a>
+          <form th:action="@{/logout}" method="post"><button type="submit">Cerrar Sesión</button></form>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+    
+    <div th:if="${param.exito}" style="grid-column: span 2; background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9;" th:text="${param.exito}"></div>
+    <div th:if="${param.error}" style="grid-column: span 2; background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; border: 1px solid #ffcdd2;" th:text="${param.error}"></div>
+
+    <div class="card" style="padding: 30px; background: white; border-radius: 12px;">
+  <h2>Tu Avatar</h2>
+  <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">Elige a tu compañero Pokémon:</p>
+  <form th:action="@{/perfil/avatar}" method="post">
+    <div class="avatar-selector">
+      <label class="avatar-option">
+        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" required>
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Pokéball">
+      </label>
+      <label class="avatar-option">
+        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="Eevee">
+      </label>
+      <label class="avatar-option">
+        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu">
+      </label>
+      <label class="avatar-option">
+        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="Bulbasaur">
+      </label>
+      <label class="avatar-option">
+        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander">
+      </label>
+      <label class="avatar-option">
+        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="Squirtle">
+      </label>
+      <label class="avatar-option">
+        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png" alt="Gengar">
+      </label>
+    </div>
+    <button type="submit" class="btn-search" style="width: 100%;">Guardar Avatar</button>
+  </form>
+</div>
+
+    <div class="card" style="padding: 30px; background: white; border-radius: 12px;">
+      <h2>Seguridad</h2>
+      <form th:action="@{/perfil/password}" method="post">
+        <div class="form-group">
+          <label>Contraseña Actual:</label>
+          <input type="password" name="actual" required>
+        </div>
+        <div class="form-group">
+          <label>Nueva Contraseña:</label>
+          <input type="password" name="nueva" required>
+        </div>
+        <div class="form-group">
+          <label>Confirmar Nueva Contraseña:</label>
+          <input type="password" name="confirmacion" required>
+        </div>
+        <button type="submit" class="btn-search" style="width: 100%; background: #2c3e50;">Actualizar Contraseña</button>
+      </form>
+    </div>
+
+  </main>
+</body>
+</html>
