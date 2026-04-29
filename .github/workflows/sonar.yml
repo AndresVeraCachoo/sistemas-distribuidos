@@ -1,0 +1,28 @@
+name: Analisis de SonarCloud Practica 2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Practica-2/**" # Solo se ejecuta si cambio cosas dentro de la práctica 2
+  workflow_dispatch:
+
+jobs:
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Necesario para que Sonar analice bien el historial
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # AÑADIDO EL '#' PARA EVITAR EL ERROR DE SINTAXIS
+          # Le decimos que el proyecto está en la subcarpeta
+          projectBaseDir: Practica-2
