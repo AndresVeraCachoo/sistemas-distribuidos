@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>PokeApp - Mi Perfil</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" th:href="@{/css/global.css}" />
+  <link rel="stylesheet" th:href="@{/css/navbar.css}" />
+  <link rel="stylesheet" th:href="@{/css/components.css}" />
 </head>
 <body>
   <header class="navbar">
@@ -23,65 +25,76 @@
     </nav>
   </header>
 
-  <main class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+  <main class="container profile-grid mt-20">
     
-    <div th:if="${param.exito}" style="grid-column: span 2; background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9;" th:text="${param.exito}"></div>
-    <div th:if="${param.error}" style="grid-column: span 2; background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; border: 1px solid #ffcdd2;" th:text="${param.error}"></div>
+    <!-- Alertas -->
+    <div th:if="${param.exito}" class="card alert alert-success col-span-2" th:text="${param.exito}"></div>
+    <div th:if="${param.error}" class="card alert alert-error col-span-2" th:text="${param.error}"></div>
 
-    <div class="card" style="padding: 30px; background: white; border-radius: 12px;">
-  <h2>Tu Avatar</h2>
-  <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">Elige a tu compañero Pokémon:</p>
-  <form th:action="@{/perfil/avatar}" method="post">
-    <div class="avatar-selector">
-      <label class="avatar-option">
-        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" required>
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Pokéball">
-      </label>
-      <label class="avatar-option">
-        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="Eevee">
-      </label>
-      <label class="avatar-option">
-        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu">
-      </label>
-      <label class="avatar-option">
-        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="Bulbasaur">
-      </label>
-      <label class="avatar-option">
-        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander">
-      </label>
-      <label class="avatar-option">
-        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="Squirtle">
-      </label>
-      <label class="avatar-option">
-        <input type="radio" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png" alt="Gengar">
-      </label>
+    <!-- Panel 1: Avatar -->
+    <div class="card">
+      <h2>Tu Avatar</h2>
+      <p class="text-muted">Elige a tu compañero Pokémon:</p>
+      
+      <form th:action="@{/perfil/avatar}" method="post">
+        <div class="avatar-selector">
+          <div class="avatar-option">
+            <input type="radio" id="ava-poke" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" required>
+            <label for="ava-poke"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Pokéball"></label>
+          </div>
+          <div class="avatar-option">
+            <input type="radio" id="ava-eevee" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png">
+            <label for="ava-eevee"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="Eevee"></label>
+          </div>
+          <div class="avatar-option">
+            <input type="radio" id="ava-pika" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png">
+            <label for="ava-pika"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu"></label>
+          </div>
+          <div class="avatar-option">
+            <input type="radio" id="ava-bulba" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png">
+            <label for="ava-bulba"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="Bulbasaur"></label>
+          </div>
+          <div class="avatar-option">
+            <input type="radio" id="ava-char" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png">
+            <label for="ava-char"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander"></label>
+          </div>
+          <div class="avatar-option">
+            <input type="radio" id="ava-squirt" name="avatarUrl" value="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png">
+            <label for="ava-squirt"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="Squirtle"></label>
+          </div>
+        </div>
+        <button type="submit" class="btn-search w-100">Guardar Avatar</button>
+      </form>
     </div>
-    <button type="submit" class="btn-search" style="width: 100%;">Guardar Avatar</button>
-  </form>
-</div>
 
-    <div class="card" style="padding: 30px; background: white; border-radius: 12px;">
+    <!-- Panel 2: Contraseña -->
+    <div class="card">
       <h2>Seguridad</h2>
       <form th:action="@{/perfil/password}" method="post">
         <div class="form-group">
-          <label>Contraseña Actual:</label>
-          <input type="password" name="actual" required>
+          <label for="actual">Contraseña Actual:</label>
+          <input type="password" id="actual" name="actual" class="w-100" required>
         </div>
         <div class="form-group">
-          <label>Nueva Contraseña:</label>
-          <input type="password" name="nueva" required>
+          <label for="nueva">Nueva Contraseña:</label>
+          <input type="password" id="nueva" name="nueva" class="w-100" required>
         </div>
         <div class="form-group">
-          <label>Confirmar Nueva Contraseña:</label>
-          <input type="password" name="confirmacion" required>
+          <label for="confirmacion">Confirmar Nueva Contraseña:</label>
+          <input type="password" id="confirmacion" name="confirmacion" class="w-100" required>
         </div>
-        <button type="submit" class="btn-search" style="width: 100%; background: #2c3e50;">Actualizar Contraseña</button>
+        <button type="submit" class="btn-search btn-dark w-100 mt-10">Actualizar Contraseña</button>
+      </form>
+    </div>
+    
+    <!-- Panel 3: Zona Peligrosa (Eliminar Cuenta) -->
+    <div class="card col-span-2" style="border-color: #c0392b; background-color: #fadbd8; margin-top: 20px;">
+      <h2 style="color: #c0392b;">ZONA PELIGROSA</h2>
+      <p style="color: #c0392b;">Al eliminar tu cuenta, perderás todo tu progreso y tu Pokédex.</p>
+      
+      <!-- Usamos 'onsubmit' con confirm() para lanzar el popup nativo del navegador -->
+      <form th:action="@{/perfil/eliminar}" method="post" onsubmit="return confirm('¡CUIDADO! ¿Estás seguro de que quieres eliminar tu cuenta y todo tu historial para siempre? Esta acción no se puede deshacer.');">
+        <button type="submit" class="btn-search btn-red w-100 mt-10">ELIMINAR CUENTA DEFINITIVAMENTE</button>
       </form>
     </div>
 

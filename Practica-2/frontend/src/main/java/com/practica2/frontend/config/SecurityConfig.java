@@ -17,8 +17,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Deshabilitado para pruebas iniciales
+                // En el método securityFilterChain, actualiza los permitAll:
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/img/**").permitAll()
+                        .requestMatchers("/login", "/registro", "/css/**", "/img/**", "/js/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(login -> login
                         .loginPage("/login")

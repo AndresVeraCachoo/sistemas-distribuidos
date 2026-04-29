@@ -31,9 +31,11 @@ public class HistorialController {
         model.addAttribute("historial", historial);
         model.addAttribute("totalBusquedas", busquedaRepository.countByUsuario(user));
 
+        long pokemonUnicos = historial.stream().map(Busqueda::getPokemonName).distinct().count();
+        model.addAttribute("pokemonUnicos", pokemonUnicos);
+
         if (!historial.isEmpty()) {
             model.addAttribute("ultimaBusqueda", historial.get(0).getPokemonName());
-            model.addAttribute("fechaUltima", historial.get(0).getFechaBusqueda());
         }
         return "historial";
     }

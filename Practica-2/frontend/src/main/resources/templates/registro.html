@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PokeApp - Registro</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}" />
+    <link rel="stylesheet" th:href="@{/css/components.css}" />
+</head>
+<body>
+    <div class="container auth-container">
+        <div class="card">
+            <div class="auth-header">
+                <h2 class="auth-title">NUEVO ENTRENADOR</h2>
+            </div>
+            
+            <div th:if="${param.error}" class="card alert alert-error">
+                El nombre de usuario ya existe.
+            </div>
+
+            <form th:action="@{/registro}" method="post">
+                <div class="form-group">
+                    <label for="nombre">NOMBRE COMPLETO:</label>
+                    <input type="text" id="nombre" name="nombre" class="w-100" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">USUARIO:</label>
+                    <input type="text" id="username" name="username" class="w-100" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">CONTRASEÑA:</label>
+                    <input type="password" id="password" name="password" class="w-100" required>
+                </div>
+                <button type="submit" class="btn-search auth-btn">REGISTRARSE</button>
+            </form>
+            
+            <p class="auth-footer">
+                ¿Ya tienes cuenta? <a href="/login" style="color: var(--pkmn-blue);">SIGN IN</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

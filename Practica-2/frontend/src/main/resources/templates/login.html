@@ -1,57 +1,58 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <title>PokeApp - Login</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <style>
-      .login-card {
-        max-width: 400px;
-        margin: 100px auto;
-        padding: 40px;
-      }
-      .form-group {
-        margin-bottom: 15px;
-        text-align: left;
-      }
-      input {
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .error {
-        color: red;
-        margin-bottom: 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="card login-card">
-        <h2>Iniciar Sesión</h2>
-        <div th:if="${param.error}" class="error">
-          Usuario o contraseña incorrectos.
-        </div>
-        <div th:if="${param.logout}" style="color: green">
-          Sesión cerrada con éxito.
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <title>PokeApp - Entrar</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}" />
+    <link rel="stylesheet" th:href="@{/css/components.css}" />
+</head>
+<body>
+    <div class="container auth-container">
+        <div class="card">
+            
+            <div class="auth-header">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" 
+                     alt="Pokeball" 
+                     class="auth-icon">
+                <h2 class="auth-title">SIGN IN</h2>
+            </div>
+            
+            <!-- Mensajes dinámicos -->
+            <div th:if="${param.error}" class="card alert alert-error">
+                Credenciales incorrectas.
+            </div>
+            
+            <div th:if="${param.logout}" class="card alert alert-success">
+                Sesión cerrada con éxito.
+            </div>
 
-        <form th:action="@{/login}" method="post">
-          <div class="form-group">
-            <label>Usuario:</label>
-            <input type="text" name="username" required autofocus />
-          </div>
-          <div class="form-group">
-            <label>Contraseña:</label>
-            <input type="password" name="password" required />
-          </div>
-          <button type="submit" class="btn-search" style="width: 100%">
-            Entrar
-          </button>
-        </form>
-        <p style="margin-top: 20px; font-size: 0.9em; color: #666">
-          Tip: Usa <b>admin</b> / <b>admin123</b>
-        </p>
-      </div>
+            <div th:if="${param.registrado}" class="card alert alert-info">
+                ¡Registro completado! Ahora puedes entrar.
+            </div>
+            
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">ID ENTRENADOR (Usuario):</label>
+                    <input type="text" id="username" name="username" class="w-100" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">CÓDIGO SECRETO (Contraseña):</label>
+                    <input type="password" id="password" name="password" class="w-100" required>
+                </div>
+                
+                <button type="submit" class="btn-search auth-btn">
+                    ENTRAR AL SISTEMA
+                </button>
+            </form>
+            
+            <p class="auth-footer">
+                ¿Eres nuevo? <a href="/registro" style="color: var(--pkmn-blue);">¡CREAR CUENTA!</a>
+            </p>
+            <p class="auth-hint">
+                ¿Pruebas? Usa [ ash / pueblopaleta ]
+            </p>
+        </div>
     </div>
-  </body>
+</body>
 </html>

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <title>PokeApp - Buscador</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}" />
-  <style>
-    .pokemon-card { text-align: center; margin-top: 20px; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
-    .pokemon-card img { width: 180px; height: 180px; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.2)); }
-    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; text-align: left; background: #fdfdfd; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
-    .error-card { background: #ffebee; color: #c62828; padding: 20px; border-radius: 8px; margin-top: 20px; }
-  </style>
+  
+  <link rel="stylesheet" th:href="@{/css/global.css}" />
+  <link rel="stylesheet" th:href="@{/css/navbar.css}" />
+  <link rel="stylesheet" th:href="@{/css/components.css}" />
+  <link rel="stylesheet" th:href="@{/css/pokemon.css}" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header class="navbar">
@@ -23,26 +23,32 @@
         <div class="dropdown-content">
           <a href="/perfil">Mi Perfil</a>
           <a href="/historial">Estad. Entrenador</a>
-          <form th:action="@{/logout}" method="post">
-            <button type="submit">Cerrar Sesión</button>
-          </form>
+          <form th:action="@{/logout}" method="post"><button type="submit">Cerrar Sesión</button></form>
         </div>
       </div>
     </nav>
   </header>
 
-  <main class="container">
+  <main th:class="${pokemon2 != null} ? 'container arena-container' : 'container'">
     <h1>Buscador de Pokémon</h1>
+    
     <form th:action="@{/}" method="get" class="search-box">
-      <input type="text" name="name" placeholder="Ej: Mewtwo, Bulbasaur..." required />
+      <label for="name" style="display:none;">Buscar Pokémon</label>
+      <!-- Cambiamos el list para apuntar al nuevo datalist global -->
+      <input type="text" id="name" name="name" placeholder="Ej: mewtwo, bulbasaur..." list="pokemon-list" autocomplete="off" required />
+      
+      <datalist id="pokemon-list"></datalist>
+      
       <button type="submit" class="btn-search">Buscar Pokémon</button>
     </form>
 
     <section th:if="${pokemon != null}" class="results">
-      <div th:if="${pokemon.containsKey('error')}" class="error-card">
+      
+      <div th:if="${pokemon.containsKey('error')}" class="card error-card">
         <h3 th:text="${pokemon.get('error')}">Error en la consulta</h3>
       </div>
-      <div th:if="${!pokemon.containsKey('error')}" class="card pokemon-card">
+
+      <div th:if="${!pokemon.containsKey('error') and pokemon2 == null}" class="card pokemon-card">
         <img th:src="${pokemon.get('sprite')}" th:alt="${pokemon.get('name')}">
         <h2 th:text="${pokemon.get('name')} + ' (#' + ${pokemon.get('id')} + ')'">Nombre</h2>
         <p><b>Tipos:</b> <span th:each="tipo : ${pokemon.get('types')}" th:text="${tipo} + ' ' "></span></p>
@@ -52,8 +58,157 @@
             <span th:text="${stat.value}">0</span>
           </div>
         </div>
+
+        <hr style="margin: 30px 0; border: 0; border-top: 2px dashed #d0d0d0;">
+        
+        <h3 class="auth-hint">VS Batalla Comparativa</h3>
+        <form th:action="@{/}" method="get" class="search-box mt-10">
+          <input type="hidden" name="name" th:value="${pokemon.get('name')}">
+          <label for="compare" style="display:none;">Pokémon Rival</label>
+          <!-- También conectamos este input al datalist -->
+          <input type="text" id="compare" name="compare" placeholder="Ej: charizard..." list="pokemon-list" autocomplete="off" class="w-50" required>
+          <button type="submit" class="btn-search btn-red">¡Combatir!</button>
+        </form>
+      </div>
+
+      <div th:if="${pokemon2 != null and pokemon2.containsKey('error')}" class="card error-card">
+        <h3 th:text="'Error en rival: ' + ${pokemon2.get('error')}">Error</h3>
+        <!-- SOLUCIÓN SONAR: Añadido ', cursive' como fallback -->
+        <a href="/" style="color: #c62828; font-family: 'Press Start 2P', cursive; font-size: 0.6rem;">Volver</a>
+      </div>
+
+      <div th:if="${pokemon2 != null and !pokemon2.containsKey('error')}" class="comparison-container">
+        
+        <div class="card pokemon-card" style="border-color: #3498db;">
+          <img th:src="${pokemon.get('sprite')}" th:alt="${pokemon.get('name')}">
+          <h2 th:text="${pokemon.get('name')}">Nombre 1</h2>
+        </div>
+
+        <div class="radar-card">
+          <canvas id="radarChart"></canvas>
+        </div>
+
+        <div class="card pokemon-card" style="border-color: #e74c3c;">
+          <img th:src="${pokemon2.get('sprite')}" th:alt="${pokemon2.get('name')}">
+          <h2 th:text="${pokemon2.get('name')}">Nombre 2</h2>
+        </div>
+
+        <div class="comparison-table-card col-span-2" style="grid-column: span 3;">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th scope="col" th:text="${pokemon.get('name')}" style="color: #3498db; font-size: 1.2rem;">P1</th>
+                <th scope="col">Estadística Base</th>
+                <th scope="col" th:text="${pokemon2.get('name')}" style="color: #e74c3c; font-size: 1.2rem;">P2</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="stat : ${pokemon.get('stats')}">
+                <td th:with="val1=${stat.value}, val2=${pokemon2.get('stats').get(stat.key)}"
+                    th:class="${val1 > val2} ? 'stat-winner' : (${val1 < val2} ? 'stat-loser' : 'stat-tie')"
+                    th:text="${val1}">0</td>
+                <th scope="row" th:text="${stat.key}">Stat</th>
+                <td th:with="val1=${stat.value}, val2=${pokemon2.get('stats').get(stat.key)}"
+                    th:class="${val2 > val1} ? 'stat-winner' : (${val2 < val1} ? 'stat-loser' : 'stat-tie')"
+                    th:text="${val2}">0</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top: 20px; text-align: center;">
+            <a th:href="@{/}" class="btn-search btn-dark" style="text-decoration: none; display: inline-block;">Finalizar Combate</a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    
+    // 1. MOTOR DE AUTOCOMPLETADO ("Empieza por...")
+    document.addEventListener('DOMContentLoaded', function() {
+        let todosLosPokemon = []; // Memoria invisible
+        const dataList = document.getElementById('pokemon-list');
+        
+        // Seleccionamos tanto la barra de búsqueda principal como la de comparar
+        const inputsDeBusqueda = document.querySelectorAll('input[list="pokemon-list"]');
+
+        // 1. Descargamos el diccionario completo una sola vez en silencio
+        fetch('https://pokeapi.co/api/v2/pokemon?limit=1302')
+            .then(response => response.json())
+            .then(data => {
+                todosLosPokemon = data.results.map(p => p.name);
+            })
+            .catch(error => console.error('Error cargando la Pokédex:', error));
+
+        // 2. Cada vez que el usuario pulsa una tecla en cualquier buscador...
+        inputsDeBusqueda.forEach(input => {
+            input.addEventListener('input', function(e) {
+                const textoEscrito = e.target.value.toLowerCase();
+                
+                // Vaciamos la caja de sugerencias actual
+                dataList.innerHTML = ''; 
+
+                // Solo buscamos si ha escrito al menos 1 letra
+                if (textoEscrito.length > 0) {
+                    // Filtramos: Solo los que EMPIECEN por lo escrito. Y nos quedamos solo con los 8 primeros para no saturar la pantalla.
+                    const sugerencias = todosLosPokemon
+                        .filter(nombre => nombre.startsWith(textoEscrito))
+                        .slice(0, 8);
+                    
+                    // Metemos esas 8 sugerencias exactas en la caja
+                    sugerencias.forEach(nombre => {
+                        const option = document.createElement('option');
+                        option.value = nombre;
+                        dataList.appendChild(option);
+                    });
+                }
+            });
+        });
+    });
+
+    // 2. MOTOR DEL GRÁFICO DE COMBATE
+    var p1 = /*[[${pokemon}]]*/ null;
+    var p2 = /*[[${pokemon2}]]*/ null;
+
+    if (p1 && p2 && !p1.error && !p2.error) {
+        var ctx = document.getElementById('radarChart').getContext('2d');
+        var labels = Object.keys(p1.stats);
+        
+        Chart.defaults.font.family = "'VT323', monospace";
+        Chart.defaults.font.size = 16;
+
+        const radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels.map(l => l.toUpperCase()),
+                datasets: [{
+                    label: p1.name, data: Object.values(p1.stats),
+                    backgroundColor: 'rgba(52, 152, 219, 0.4)', borderColor: 'rgba(52, 152, 219, 1)',
+                    pointBackgroundColor: 'rgba(52, 152, 219, 1)', borderWidth: 3
+                }, {
+                    label: p2.name, data: Object.values(p2.stats),
+                    backgroundColor: 'rgba(231, 76, 60, 0.4)', borderColor: 'rgba(231, 76, 60, 1)',
+                    pointBackgroundColor: 'rgba(231, 76, 60, 1)', borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0, 0, 0, 0.2)' },
+                        grid: { color: 'rgba(0, 0, 0, 0.2)' },
+                        // SOLUCIÓN SONAR: Añadido ', cursive' como fallback en las labels del radar
+                        pointLabels: { font: { family: "'Press Start 2P', cursive", size: 10 } },
+                        ticks: { display: false } 
+                    }
+                },
+                // SOLUCIÓN SONAR: Añadido ', cursive' como fallback en la leyenda
+                plugins: { legend: { position: 'bottom', labels: { font: { family: "'Press Start 2P', cursive", size: 12 } } } }
+            }
+        });
+    }
+    /*]]>*/
+  </script>
 </body>
 </html>
