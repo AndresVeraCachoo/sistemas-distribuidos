@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PokeApp | Centro Pokémon</title>
+    <!-- Heredamos la fuente de tu global.css -->
+    <link rel="stylesheet" href="/css/global.css"> 
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <style>
+        .error-container {
+            text-align: center;
+            margin-top: 100px;
+        }
+        .error-msg { color: #dc3545; font-size: 1.5rem; margin: 20px 0; font-weight: bold; }
+        .btn-volver { padding: 10px 20px; background-color: #3b4cca; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-volver:hover { background-color: #2a3a9c; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>¡Ouch! El Centro Pokémon está cerrado 🏥</h1>
+        
+        <div class="error-msg" th:text="${error}">Error desconocido.</div>
+
+        <p>Nuestros ingenieros de tipo Eléctrico están trabajando para solucionarlo. ⚡</p>
+        <br><br>
+        <a href="/" class="btn-volver">Usar Cuerda Huida (Volver)</a>
+    </div>
+</body>
+</html>
