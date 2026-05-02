@@ -1,9 +1,13 @@
 import os
 from flask import Flask
-from routes.pokemon_routes import pokemon_bp
+from src.routes.pokemon_routes import pokemon_bp
+from src.exceptions.error_handlers import register_error_handlers 
 
-app = Flask(__name__)
+app = Flask(__name__) 
 app.register_blueprint(pokemon_bp)
+
+# CONECTAMOS LOS MANEJADORES DE ERRORES A LA APP
+register_error_handlers(app) 
 
 # Especificar el método HTTP explícitamente
 @app.route('/', methods=['GET'])

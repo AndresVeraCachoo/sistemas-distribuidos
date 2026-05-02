@@ -1,6 +1,6 @@
 # backend/src/exceptions/error_handlers.py
 from flask import jsonify
-from .custom_exceptions import BaseCustomException
+from src.exceptions.custom_exceptions import BaseCustomException
 
 def register_error_handlers(app):
     

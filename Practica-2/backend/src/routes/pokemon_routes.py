@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from services.pokeapi_service import get_pokemon_data
+from src.services.pokeapi_service import get_pokemon_data
 
 pokemon_bp = Blueprint('pokemon', __name__)
 
