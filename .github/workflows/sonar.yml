@@ -15,18 +15,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Preparamos Java en la máquina de GitHub (Usabas la versión 21 en Maven)
+      # BACKEND (PYTHON): Instalar y Testear
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Testear Backend y Generar Coverage
+        working-directory: ./Practica-2/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m pytest --cov=src --cov-report=xml
+
+      # FRONTEND (JAVA): Preparar y Testear
       - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           java-version: "21"
           distribution: "temurin"
-
-      # Compilamos el frontend para que SonarCloud pueda leer los binarios
-      - name: Compilar Frontend (Maven)
+      - name: Testear Frontend (JaCoCo)
         working-directory: ./Practica-2/frontend
-        run: chmod +x mvnw && ./mvnw clean compile
+        run: |
+          chmod +x mvnw
+          ./mvnw clean test
 
+      # Escanear todo junto
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:

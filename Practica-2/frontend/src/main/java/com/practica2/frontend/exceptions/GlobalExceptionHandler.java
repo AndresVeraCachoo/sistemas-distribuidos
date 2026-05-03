@@ -7,6 +7,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.security.access.AccessDeniedException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -22,7 +24,7 @@ public class GlobalExceptionHandler {
         logger.error("¡ALERTA! La base de datos local está caída", ex);
         model.addAttribute(ERROR_KEY,
                 "Error Crítico: Un Snorlax salvaje se ha dormido sobre la base de datos. Sistema bloqueado.");
-        return ERROR_KEY; // Apunta al archivo error.html
+        return ERROR_KEY;
     }
 
     // ERROR 404 (RUTA NO ENCONTRADA)
@@ -30,6 +32,24 @@ public class GlobalExceptionHandler {
     public String handleNotFoundError(NoResourceFoundException ex, Model model) {
         logger.warn("El usuario intentó acceder a una ruta inexistente: {}", ex.getResourcePath());
         model.addAttribute(ERROR_KEY, "Error 404: ¡Te has perdido en la hierba alta! Esa ruta no existe.");
+        return ERROR_KEY;
+    }
+
+    // ERROR AL COMUNICARSE CON PYTHON (MICROSERVICIO CAÍDO)
+    @ExceptionHandler(RestClientException.class)
+    public String handlePythonConnectionError(RestClientException ex, Model model) {
+        logger.error("¡Fallo de comunicación con la API de Python!", ex);
+        model.addAttribute(ERROR_KEY,
+                "Error de red: La Pokédex de Python no responde. ¿Quizás el Team Rocket cortó los cables?");
+        return ERROR_KEY;
+    }
+
+    // ERROR DE ACCESO DENEGADO (INTENTO DE ENTRAR SIN LOGIN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public String handleAccessDenied(AccessDeniedException ex, Model model) {
+        logger.warn("Intento de acceso no autorizado detectado.");
+        model.addAttribute(ERROR_KEY,
+                "Alto ahí: No tienes las medallas de gimnasio suficientes (no has iniciado sesión) para entrar aquí.");
         return ERROR_KEY;
     }
 

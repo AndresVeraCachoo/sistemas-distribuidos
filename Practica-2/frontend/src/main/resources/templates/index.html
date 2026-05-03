@@ -180,7 +180,7 @@
         Chart.defaults.font.family = "'VT323', monospace";
         Chart.defaults.font.size = 16;
 
-        const radarChart = new Chart(ctx, {
+        globalThis.radarChart = new Chart(ctx, {
             type: 'radar',
             data: {
                 labels: labels.map(l => l.toUpperCase()),
