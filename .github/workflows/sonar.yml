@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Testear Backend y Generar Coverage
-        working-directory: ./Practica-2/backend
+        working-directory: ./Practica-2/pokemon-api
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -34,7 +34,7 @@ jobs:
           java-version: "21"
           distribution: "temurin"
       - name: Testear Frontend (JaCoCo)
-        working-directory: ./Practica-2/frontend
+        working-directory: ./Practica-2/webapp
         run: |
           chmod +x mvnw
           ./mvnw clean test

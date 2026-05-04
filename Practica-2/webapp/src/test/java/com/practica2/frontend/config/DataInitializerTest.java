@@ -23,6 +23,10 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DataInitializerTest {
 
+    // SonarCloud Fix: Definir constantes en lugar de repetir literales de texto
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ASH_USERNAME = "ash";
+
     @Mock
     private UsuarioRepository usuarioRepository;
 
@@ -42,23 +46,23 @@ class DataInitializerTest {
     }
 
     @Test
-    void run_AdminExisteYAshNoExiste() throws Exception {
-        // 1. Arrange: Simulamos que el admin existe y tiene una búsqueda
+    void runAdminExisteYAshNoExiste() throws Exception {
+        // Arrange: Simulamos que el admin existe y tiene una búsqueda
         Usuario admin = new Usuario();
-        admin.setUsername("admin");
+        admin.setUsername(ADMIN_USERNAME);
         List<Busqueda> adminBusquedas = List.of(new Busqueda());
 
-        when(usuarioRepository.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(usuarioRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(admin));
         when(busquedaRepository.findByUsuarioOrderByFechaBusquedaDesc(admin)).thenReturn(adminBusquedas);
 
         // Simulamos que Ash NO existe aún
-        when(usuarioRepository.findByUsername("ash")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByUsername(ASH_USERNAME)).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("hashed_pass");
 
-        // 2. Act: Ejecutamos el inicializador
+        // Act: Ejecutamos el inicializador
         dataInitializer.run();
 
-        // 3. Assert: Verificamos que se borraron las búsquedas y el admin
+        // Assert: Verificamos que se borraron las búsquedas y el admin
         verify(busquedaRepository).deleteAll(adminBusquedas);
         verify(usuarioRepository).delete(admin);
 
@@ -67,19 +71,17 @@ class DataInitializerTest {
     }
 
     @Test
-    void run_AdminNoExisteYAshYaExiste() throws Exception {
-        // 1. Arrange: Simulamos que ya no hay admin y Ash ya está creado
+    void runAdminNoExisteYAshYaExiste() throws Exception {
+        // Arrange: Simulamos que ya no hay admin y Ash ya está creado
         Usuario ash = new Usuario();
-        ash.setUsername("ash");
+        ash.setUsername(ASH_USERNAME);
 
-        when(usuarioRepository.findByUsername("admin")).thenReturn(Optional.empty());
-        when(usuarioRepository.findByUsername("ash")).thenReturn(Optional.of(ash));
+        when(usuarioRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.empty());
+        when(usuarioRepository.findByUsername(ASH_USERNAME)).thenReturn(Optional.of(ash));
 
-        // 2. Act
         dataInitializer.run();
 
-        // 3. Assert: Comprobamos que NO se llamó a ningún método de borrado ni de
-        // guardado
+        // Comprobamos que NO se llamó a ningún método de borrado ni de guardado
         verify(busquedaRepository, never()).deleteAll(any());
         verify(usuarioRepository, never()).delete(any());
         verify(usuarioRepository, never()).save(any(Usuario.class));

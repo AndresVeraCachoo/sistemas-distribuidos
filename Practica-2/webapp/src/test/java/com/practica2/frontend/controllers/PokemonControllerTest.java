@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,7 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class PokemonControllerTest {
+
+    // Sonar Fix: Extraer los literales repetidos a constantes
+    private static final String PIKACHU_NAME = "pikachu";
+    private static final String ASH_USERNAME = "ash";
+    private static final String CHARMANDER_NAME = "charmander";
+    private static final String SPRITE_IMG = "sprite";
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,27 +48,29 @@ class PokemonControllerTest {
     private UsuarioRepository usuarioRepository;
 
     @Test
-    void testIndex_SinParametros_NoLogueado() throws Exception {
+    // Sonar Fix: camelCase
+    void testIndexSinParametrosNoLogueado() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection());
     }
 
     @Test
-    @WithMockUser(username = "ash")
-    void testIndex_ConBusqueda_Logueado() throws Exception {
+    @WithMockUser(username = ASH_USERNAME)
+    // Sonar Fix: camelCase
+    void testIndexConBusquedaLogueado() throws Exception {
         Usuario mockUser = new Usuario();
-        mockUser.setUsername("ash");
+        mockUser.setUsername(ASH_USERNAME);
 
         Map<String, Object> mockPokemon = Map.of(
-                "name", "pikachu",
+                "name", PIKACHU_NAME,
                 "id", 25,
-                "sprite", "http://sprite.png");
+                "SPRITE_IMG", "http://sprite.png");
 
-        when(usuarioRepository.findByUsername("ash")).thenReturn(Optional.of(mockUser));
+        when(usuarioRepository.findByUsername(ASH_USERNAME)).thenReturn(Optional.of(mockUser));
         when(busquedaRepository.findByUsuarioOrderByFechaBusquedaDesc(mockUser)).thenReturn(Collections.emptyList());
-        when(pythonApiClient.getPokemon("pikachu")).thenReturn(mockPokemon);
+        when(pythonApiClient.getPokemon(PIKACHU_NAME)).thenReturn(mockPokemon);
 
-        mockMvc.perform(get("/").param("name", "pikachu"))
+        mockMvc.perform(get("/").param("name", PIKACHU_NAME))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"))
                 .andExpect(model().attributeExists("pokemon"))
@@ -70,20 +80,21 @@ class PokemonControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "ash")
-    void testIndex_ConBusquedaYComparacion() throws Exception {
+    @WithMockUser(username = ASH_USERNAME)
+    // Sonar Fix: camelCase
+    void testIndexConBusquedaYComparacion() throws Exception {
         Usuario mockUser = new Usuario();
 
-        Map<String, Object> mockPokemon1 = Map.of("name", "pikachu", "id", 25, "sprite", "url1");
-        Map<String, Object> mockPokemon2 = Map.of("name", "charmander", "id", 4, "sprite", "url2");
+        Map<String, Object> mockPokemon1 = Map.of("name", PIKACHU_NAME, "id", 25, "SPRITE_IMG", "url1");
+        Map<String, Object> mockPokemon2 = Map.of("name", CHARMANDER_NAME, "id", 4, "SPRITE_IMG", "url2");
 
-        when(usuarioRepository.findByUsername("ash")).thenReturn(Optional.of(mockUser));
-        when(pythonApiClient.getPokemon("pikachu")).thenReturn(mockPokemon1);
-        when(pythonApiClient.getPokemon("charmander")).thenReturn(mockPokemon2);
+        when(usuarioRepository.findByUsername(ASH_USERNAME)).thenReturn(Optional.of(mockUser));
+        when(pythonApiClient.getPokemon(PIKACHU_NAME)).thenReturn(mockPokemon1);
+        when(pythonApiClient.getPokemon(CHARMANDER_NAME)).thenReturn(mockPokemon2);
 
         mockMvc.perform(get("/")
-                .param("name", "pikachu")
-                .param("compare", "charmander"))
+                .param("name", PIKACHU_NAME)
+                .param("compare", CHARMANDER_NAME))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"))
                 .andExpect(model().attributeExists("pokemon"))

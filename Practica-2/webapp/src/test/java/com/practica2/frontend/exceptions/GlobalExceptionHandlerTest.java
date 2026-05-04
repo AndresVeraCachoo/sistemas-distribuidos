@@ -15,6 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GlobalExceptionHandlerTest {
 
+    // Sonar Fix: Extraer "error" a una constante para evitar duplicados
+    private static final String ERROR_VIEW = "error";
+
     private GlobalExceptionHandler exceptionHandler;
     private Model model;
 
@@ -33,8 +36,8 @@ class GlobalExceptionHandlerTest {
         String vista = exceptionHandler.handleDatabaseErrors(ex, model);
 
         // Comprobamos que nos redirige a la vista "error" y nos pasa el mensaje
-        assertEquals("error", vista);
-        assertTrue(model.containsAttribute("error"));
+        assertEquals(ERROR_VIEW, vista);
+        assertTrue(model.containsAttribute(ERROR_VIEW));
     }
 
     @Test
@@ -44,8 +47,8 @@ class GlobalExceptionHandlerTest {
 
         String vista = exceptionHandler.handleNotFoundError(ex, model);
 
-        assertEquals("error", vista);
-        assertTrue(model.containsAttribute("error"));
+        assertEquals(ERROR_VIEW, vista);
+        assertTrue(model.containsAttribute(ERROR_VIEW));
     }
 
     @Test
@@ -55,8 +58,8 @@ class GlobalExceptionHandlerTest {
 
         String vista = exceptionHandler.handlePythonConnectionError(ex, model);
 
-        assertEquals("error", vista);
-        assertTrue(model.containsAttribute("error"));
+        assertEquals(ERROR_VIEW, vista);
+        assertTrue(model.containsAttribute(ERROR_VIEW));
     }
 
     @Test
@@ -66,8 +69,8 @@ class GlobalExceptionHandlerTest {
 
         String vista = exceptionHandler.handleAccessDenied(ex, model);
 
-        assertEquals("error", vista);
-        assertTrue(model.containsAttribute("error"));
+        assertEquals(ERROR_VIEW, vista);
+        assertTrue(model.containsAttribute(ERROR_VIEW));
     }
 
     @Test
@@ -77,7 +80,7 @@ class GlobalExceptionHandlerTest {
 
         String vista = exceptionHandler.handleGenericErrors(ex, model);
 
-        assertEquals("error", vista);
-        assertTrue(model.containsAttribute("error"));
+        assertEquals(ERROR_VIEW, vista);
+        assertTrue(model.containsAttribute(ERROR_VIEW));
     }
 }

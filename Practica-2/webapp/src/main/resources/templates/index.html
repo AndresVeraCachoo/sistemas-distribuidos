@@ -36,7 +36,6 @@
     
     <form th:action="@{/}" method="get" class="search-box">
       <label for="name" style="display:none;">Buscar Pokémon</label>
-      <!-- Cambiamos el list para apuntar al nuevo datalist global -->
       <input type="text" id="name" name="name" placeholder="Ej: mewtwo, bulbasaur..." list="pokemon-list" autocomplete="off" required />
       
       <datalist id="pokemon-list"></datalist>
@@ -67,7 +66,6 @@
         <form th:action="@{/}" method="get" class="search-box mt-10">
           <input type="hidden" name="name" th:value="${pokemon.get('name')}">
           <label for="compare" style="display:none;">Pokémon Rival</label>
-          <!-- También conectamos este input al datalist -->
           <input type="text" id="compare" name="compare" placeholder="Ej: charizard..." list="pokemon-list" autocomplete="off" class="w-50" required>
           <button type="submit" class="btn-search btn-red">¡Combatir!</button>
         </form>
@@ -75,7 +73,6 @@
 
       <div th:if="${pokemon2 != null and pokemon2.containsKey('error')}" class="card error-card">
         <h3 th:text="'Error en rival: ' + ${pokemon2.get('error')}">Error</h3>
-        <!-- SOLUCIÓN SONAR: Añadido ', cursive' como fallback -->
         <a href="/" style="color: #c62828; font-family: 'Press Start 2P', cursive; font-size: 0.6rem;">Volver</a>
       </div>
 
@@ -86,7 +83,8 @@
           <h2 th:text="${pokemon.get('name')}">Nombre 1</h2>
         </div>
 
-        <div class="radar-card">
+        <!-- SOLUCIÓN AL GRÁFICO: Se fuerza la posición relativa y una altura mínima para que Chart.js pueda dibujarse -->
+        <div class="radar-card" style="position: relative; width: 100%; min-height: 320px; display: flex; justify-content: center; align-items: center;">
           <canvas id="radarChart"></canvas>
         </div>
 
@@ -95,8 +93,8 @@
           <h2 th:text="${pokemon2.get('name')}">Nombre 2</h2>
         </div>
 
-        <div class="comparison-table-card col-span-2" style="grid-column: span 3;">
-          <table class="comparison-table">
+        <div class="comparison-table-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 20px;">
+          <table class="comparison-table" style="width: 100%; max-width: 600px; text-align: center;">
             <thead>
               <tr>
                 <th scope="col" th:text="${pokemon.get('name')}" style="color: #3498db; font-size: 1.2rem;">P1</th>
@@ -116,7 +114,7 @@
               </tr>
             </tbody>
           </table>
-          <div style="margin-top: 20px; text-align: center;">
+          <div style="margin-top: 30px; text-align: center;">
             <a th:href="@{/}" class="btn-search btn-dark" style="text-decoration: none; display: inline-block;">Finalizar Combate</a>
           </div>
         </div>
@@ -127,15 +125,12 @@
   <script th:inline="javascript">
     /*<![CDATA[*/
     
-    // 1. MOTOR DE AUTOCOMPLETADO ("Empieza por...")
+    // 1. MOTOR DE AUTOCOMPLETADO
     document.addEventListener('DOMContentLoaded', function() {
-        let todosLosPokemon = []; // Memoria invisible
+        let todosLosPokemon = [];
         const dataList = document.getElementById('pokemon-list');
-        
-        // Seleccionamos tanto la barra de búsqueda principal como la de comparar
         const inputsDeBusqueda = document.querySelectorAll('input[list="pokemon-list"]');
 
-        // 1. Descargamos el diccionario completo una sola vez en silencio
         fetch('https://pokeapi.co/api/v2/pokemon?limit=1302')
             .then(response => response.json())
             .then(data => {
@@ -143,22 +138,16 @@
             })
             .catch(error => console.error('Error cargando la Pokédex:', error));
 
-        // 2. Cada vez que el usuario pulsa una tecla en cualquier buscador...
         inputsDeBusqueda.forEach(input => {
             input.addEventListener('input', function(e) {
                 const textoEscrito = e.target.value.toLowerCase();
-                
-                // Vaciamos la caja de sugerencias actual
                 dataList.innerHTML = ''; 
 
-                // Solo buscamos si ha escrito al menos 1 letra
                 if (textoEscrito.length > 0) {
-                    // Filtramos: Solo los que EMPIECEN por lo escrito. Y nos quedamos solo con los 8 primeros para no saturar la pantalla.
                     const sugerencias = todosLosPokemon
                         .filter(nombre => nombre.startsWith(textoEscrito))
                         .slice(0, 8);
                     
-                    // Metemos esas 8 sugerencias exactas en la caja
                     sugerencias.forEach(nombre => {
                         const option = document.createElement('option');
                         option.value = nombre;
@@ -174,39 +163,50 @@
     var p2 = /*[[${pokemon2}]]*/ null;
 
     if (p1 && p2 && !p1.error && !p2.error) {
-        var ctx = document.getElementById('radarChart').getContext('2d');
-        var labels = Object.keys(p1.stats);
-        
-        Chart.defaults.font.family = "'VT323', monospace";
-        Chart.defaults.font.size = 16;
+        // Asegurarse de que el DOM está completamente cargado antes de pintar
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('radarChart');
+            if(canvas) {
+                var ctx = canvas.getContext('2d');
+                var labels = Object.keys(p1.stats);
+                
+                Chart.defaults.font.family = "'VT323', monospace";
+                Chart.defaults.font.size = 16;
 
-        globalThis.radarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: labels.map(l => l.toUpperCase()),
-                datasets: [{
-                    label: p1.name, data: Object.values(p1.stats),
-                    backgroundColor: 'rgba(52, 152, 219, 0.4)', borderColor: 'rgba(52, 152, 219, 1)',
-                    pointBackgroundColor: 'rgba(52, 152, 219, 1)', borderWidth: 3
-                }, {
-                    label: p2.name, data: Object.values(p2.stats),
-                    backgroundColor: 'rgba(231, 76, 60, 0.4)', borderColor: 'rgba(231, 76, 60, 1)',
-                    pointBackgroundColor: 'rgba(231, 76, 60, 1)', borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(0, 0, 0, 0.2)' },
-                        grid: { color: 'rgba(0, 0, 0, 0.2)' },
-                        // SOLUCIÓN SONAR: Añadido ', cursive' como fallback en las labels del radar
-                        pointLabels: { font: { family: "'Press Start 2P', cursive", size: 10 } },
-                        ticks: { display: false } 
+                const miGrafico = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels.map(l => l.toUpperCase()),
+                        datasets: [{
+                            label: p1.name.toUpperCase(), 
+                            data: Object.values(p1.stats),
+                            backgroundColor: 'rgba(52, 152, 219, 0.4)', 
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            pointBackgroundColor: 'rgba(52, 152, 219, 1)', 
+                            borderWidth: 3
+                        }, {
+                            label: p2.name.toUpperCase(), 
+                            data: Object.values(p2.stats),
+                            backgroundColor: 'rgba(231, 76, 60, 0.4)', 
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            pointBackgroundColor: 'rgba(231, 76, 60, 1)', 
+                            borderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(0, 0, 0, 0.2)' },
+                                grid: { color: 'rgba(0, 0, 0, 0.2)' },
+                                pointLabels: { font: { family: "'Press Start 2P', cursive", size: 10 } },
+                                ticks: { display: false } 
+                            }
+                        },
+                        plugins: { legend: { position: 'bottom', labels: { font: { family: "'Press Start 2P', cursive", size: 12 } } } }
                     }
-                },
-                // SOLUCIÓN SONAR: Añadido ', cursive' como fallback en la leyenda
-                plugins: { legend: { position: 'bottom', labels: { font: { family: "'Press Start 2P', cursive", size: 12 } } } }
+                });
             }
         });
     }

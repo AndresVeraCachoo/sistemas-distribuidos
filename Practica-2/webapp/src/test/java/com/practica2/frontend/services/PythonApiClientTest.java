@@ -18,6 +18,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PythonApiClientTest {
 
+    // Sonar Fix: Extracción a constante
+    private static final String ERROR_KEY = "error";
+    private static final String PIKACHU_NAME = "pikachu";
+
     @Mock
     private RestTemplate restTemplate;
 
@@ -25,32 +29,32 @@ class PythonApiClientTest {
     private PythonApiClient pythonApiClient;
 
     @Test
-    void getPokemon_Exito() {
+    void getPokemonExito() {
         // Arrange
-        Map<String, Object> mockResponse = Map.of("name", "pikachu", "id", 25);
+        Map<String, Object> mockResponse = Map.of("name", PIKACHU_NAME, "id", 25);
         when(restTemplate.getForObject(anyString(), eq(Map.class))).thenReturn(mockResponse);
 
         // Act
-        Map<String, Object> result = pythonApiClient.getPokemon("pikachu");
+        Map<String, Object> result = pythonApiClient.getPokemon(PIKACHU_NAME);
 
         // Assert
         assertNotNull(result);
-        assertEquals("pikachu", result.get("name"));
-        assertFalse(result.containsKey("error"));
+        assertEquals(PIKACHU_NAME, result.get("name"));
+        assertFalse(result.containsKey(ERROR_KEY));
     }
 
     @Test
-    void getPokemon_FiltroAntiHackers() {
+    void getPokemonFiltroAntiHackers() {
         // Act: Intentamos buscar con caracteres no permitidos
         Map<String, Object> result = pythonApiClient.getPokemon("pika_chu!");
 
         // Assert: Comprobamos que el filtro lo detiene antes de llamar a RestTemplate
-        assertTrue(result.containsKey("error"));
-        assertEquals("¡Un Unown bloquea el camino! Por favor, usa solo letras y números.", result.get("error"));
+        assertTrue(result.containsKey(ERROR_KEY));
+        assertEquals("¡Un Unown bloquea el camino! Por favor, usa solo letras y números.", result.get(ERROR_KEY));
     }
 
     @Test
-    void getPokemon_ErrorDeRed_TeamRocket() {
+    void getPokemonErrorDeRedTeamRocket() {
         // Arrange: Simulamos que la conexión falla físicamente
         when(restTemplate.getForObject(anyString(), eq(Map.class)))
                 .thenThrow(new ResourceAccessException("Timeout"));
@@ -59,12 +63,12 @@ class PythonApiClientTest {
         Map<String, Object> result = pythonApiClient.getPokemon("bulbasaur");
 
         // Assert: Verificamos el mensaje personalizado de tu catch
-        assertTrue(result.containsKey("error"));
-        assertEquals("El Team Rocket ha cortado los cables. No hay conexión con el servidor.", result.get("error"));
+        assertTrue(result.containsKey(ERROR_KEY));
+        assertEquals("El Team Rocket ha cortado los cables. No hay conexión con el servidor.", result.get(ERROR_KEY));
     }
 
     @Test
-    void getPokemon_ErrorGenerico_Autodestruccion() {
+    void getPokemonErrorGenericoAutodestruccion() {
         // Arrange: Simulamos cualquier otro error inesperado
         when(restTemplate.getForObject(anyString(), eq(Map.class)))
                 .thenThrow(new RuntimeException("Crash"));
@@ -73,7 +77,7 @@ class PythonApiClientTest {
         Map<String, Object> result = pythonApiClient.getPokemon("mewtwo");
 
         // Assert
-        assertTrue(result.containsKey("error"));
-        assertEquals("El servidor usó Autodestrucción. Error catastrófico.", result.get("error"));
+        assertTrue(result.containsKey(ERROR_KEY));
+        assertEquals("El servidor usó Autodestrucción. Error catastrófico.", result.get(ERROR_KEY));
     }
 }

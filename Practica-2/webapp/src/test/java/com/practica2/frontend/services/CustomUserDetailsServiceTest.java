@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CustomUserDetailsServiceTest {
 
+    private static final String ASH_USERNAME = "ash";
+
     @Mock
     private UsuarioRepository usuarioRepository;
 
@@ -28,24 +30,24 @@ class CustomUserDetailsServiceTest {
     private CustomUserDetailsService userDetailsService;
 
     @Test
-    void loadUserByUsername_Exito() {
+    // Sonar Fix: camelCase
+    void loadUserByUsernameExito() {
         Usuario mockUser = new Usuario();
-        mockUser.setUsername("ash");
+        mockUser.setUsername(ASH_USERNAME);
         mockUser.setPassword("1234");
-        when(usuarioRepository.findByUsername("ash")).thenReturn(Optional.of(mockUser));
+        when(usuarioRepository.findByUsername(ASH_USERNAME)).thenReturn(Optional.of(mockUser));
 
-        UserDetails result = userDetailsService.loadUserByUsername("ash");
+        UserDetails result = userDetailsService.loadUserByUsername(ASH_USERNAME);
 
         assertNotNull(result);
-        assertEquals("ash", result.getUsername());
+        assertEquals(ASH_USERNAME, result.getUsername());
     }
 
     @Test
-    void loadUserByUsername_NoExiste() {
+    // Sonar Fix: camelCase
+    void loadUserByUsernameNoExiste() {
         when(usuarioRepository.findByUsername("fantasma")).thenReturn(Optional.empty());
-
-        assertThrows(UsernameNotFoundException.class, () -> {
-            userDetailsService.loadUserByUsername("fantasma");
-        });
+        
+        assertThrows(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername("fantasma"));
     }
 }
