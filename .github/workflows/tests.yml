@@ -83,7 +83,7 @@ jobs:
         run: npm install -g newman
 
       - name: Ejecutar Tests de Integración
-        run: newman run postman/collection/PokeApp_API_Tests.json
+        run: newman run postman/collections/PokeApp_API_Tests.postman_collection.json
 
       - name: Apagar y limpiar contenedores Docker
         if: always() # Garantiza que se apaguen incluso si el test de Postman falla
