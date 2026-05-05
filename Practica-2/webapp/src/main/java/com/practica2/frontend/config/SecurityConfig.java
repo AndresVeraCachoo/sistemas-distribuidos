@@ -11,6 +11,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+/**
+ * This class likely contains configurations related to security settings in a Java application.
+ */
 public class SecurityConfig {
 
     @Bean
