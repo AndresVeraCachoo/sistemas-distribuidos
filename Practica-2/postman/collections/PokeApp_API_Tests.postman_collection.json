@@ -1,0 +1,418 @@
+{
+  "info": {
+    "_postman_id": "02035a0f-a754-4793-9f2d-036fc7fe06ce",
+    "name": "PokeApp API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54352882",
+    "_collection_link": "https://go.postman.co/collection/54352882-02035a0f-a754-4793-9f2d-036fc7fe06ce?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "GET Pokemon Valido (Pikachu)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Validar que la conexión ha sido un éxito (Código HTTP 200)\r",
+              "pm.test(\"Status code is 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Validar que la API es rápida\r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Validar los datos básicos (Corregido con mayúscula)\r",
+              "pm.test(\"El JSON devuelve a Pikachu correctamente\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    \r",
+              "    pm.expect(jsonData.id).to.eql(25);\r",
+              "    // ¡Aquí está la corrección! Esperamos \"Pikachu\" con P mayúscula\r",
+              "    pm.expect(jsonData.name).to.eql(\"Pikachu\"); \r",
+              "    pm.expect(jsonData.sprite).to.include(\"http\");\r",
+              "});\r",
+              "\r",
+              "// 4. EXTRA: Validar la estructura compleja (Stats y Tipos)\r",
+              "pm.test(\"Contiene los stats y el tipo eléctrico\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    \r",
+              "    // Validamos que 'types' es una lista y contiene \"electric\"\r",
+              "    pm.expect(jsonData.types).to.be.an(\"array\").that.includes(\"electric\");\r",
+              "    \r",
+              "    // Validamos que existe el objeto 'stats' y su velocidad es 90\r",
+              "    pm.expect(jsonData.stats).to.be.an(\"object\");\r",
+              "    pm.expect(jsonData.stats).to.have.property(\"hp\");\r",
+              "    pm.expect(jsonData.stats.speed).to.eql(90);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/pikachu",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "pikachu"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Pokemon Inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Validar que el servidor responde con un 404 (Not Found)\r",
+              "pm.test(\"Status code debe ser 404 (Not Found)\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "// 2. Validar que no tarda demasiado en darnos el error\r",
+              "pm.test(\"El tiempo de respuesta es aceptable (Menor a 2s)\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Validar que devuelve un JSON de error (opcional pero recomendado)\r",
+              "pm.test(\"La respuesta debe ser un JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "packages": {},
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/agumon",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "agumon"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Pokemon Valido (Mewtwo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Validar conexión\r",
+              "pm.test(\"Status code is 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Validar tipos de datos y valores exactos\r",
+              "pm.test(\"El JSON tiene la estructura correcta para Mewtwo\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    \r",
+              "    // Verificamos que 'id' es número y es el 150\r",
+              "    pm.expect(jsonData.id).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData.id).to.eql(150);\r",
+              "    \r",
+              "    // Verificamos que 'name' es texto y tiene la M mayúscula\r",
+              "    pm.expect(jsonData.name).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.name).to.eql(\"Mewtwo\");\r",
+              "});\r",
+              "\r",
+              "// 3. Validar los detalles internos\r",
+              "pm.test(\"Contiene sus stats y tipo psíquico\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    \r",
+              "    // Mewtwo es tipo psíquico (psychic)\r",
+              "    pm.expect(jsonData.types).to.be.an(\"array\").that.includes(\"psychic\");\r",
+              "    \r",
+              "    // Nos aseguramos de que el campo sprite existe\r",
+              "    pm.expect(jsonData).to.have.property(\"sprite\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/mewtwo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "mewtwo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Pokemon con Mayúsculas Alternas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"El servidor ignora las mayúsculas y devuelve a Charizard\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.name).to.eql(\"Charizard\"); // Tu API lo devolverá bien formateado\r",
+              "    pm.expect(jsonData.id).to.eql(6);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/cHaRiZaRd",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "cHaRiZaRd"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Pokemon por ID Numérico",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Buscar por ID devuelve a Bulbasaur\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.name).to.eql(\"Bulbasaur\");\r",
+              "    pm.expect(jsonData.id).to.eql(1);\r",
+              "    pm.expect(jsonData.types).to.be.an(\"array\").that.includes(\"grass\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Pokemon Validación de Estructura",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"El JSON tiene la estructura estandarizada (Contract Test)\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    \r",
+              "    // Comprobamos que TODAS estas llaves existen, sin importar su valor\r",
+              "    pm.expect(jsonData).to.have.all.keys(\r",
+              "        'id', \r",
+              "        'name', \r",
+              "        'height', \r",
+              "        'weight', \r",
+              "        'sprite', \r",
+              "        'stats', \r",
+              "        'types'\r",
+              "    );\r",
+              "    \r",
+              "    // Comprobamos que 'weight' y 'height' siempre sean números\r",
+              "    pm.expect(jsonData.weight).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData.height).to.be.a(\"number\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/snorlax",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "snorlax"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Error - Ruta Incompleta",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code es 200 OK al no enviar nombre\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Devuelve un JSON válido\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/snorlax",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "snorlax"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Error - Símbolos no permitidos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"El servidor no explota (No da error 500)\", function () {\r",
+              "    pm.expect(pm.response.code).to.not.eql(500);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"El servidor maneja la basura con un 503 (Servicio no disponible)\", function () {\r",
+              "    pm.response.to.have.status(503);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/pokemon/@@@@",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "pokemon",
+            "@@@@"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

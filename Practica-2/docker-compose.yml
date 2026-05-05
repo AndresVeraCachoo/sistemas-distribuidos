@@ -39,10 +39,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - API_PYTHON_URL=${PYTHON_API_URL}
+      - API_PYTHON_URL=http://api-python:5000  
+      - APP_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD}
     depends_on:
       - db
       - api-python
-
 volumes:
   pgdata:

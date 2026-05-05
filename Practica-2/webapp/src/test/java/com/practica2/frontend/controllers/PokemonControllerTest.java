@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class PokemonControllerTest {
 
-    // Sonar Fix: Extraer los literales repetidos a constantes
+    // Extraer los literales repetidos a constantes
     private static final String PIKACHU_NAME = "pikachu";
     private static final String ASH_USERNAME = "ash";
     private static final String CHARMANDER_NAME = "charmander";
@@ -48,7 +48,6 @@ class PokemonControllerTest {
     private UsuarioRepository usuarioRepository;
 
     @Test
-    // Sonar Fix: camelCase
     void testIndexSinParametrosNoLogueado() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection());
@@ -61,10 +60,11 @@ class PokemonControllerTest {
         Usuario mockUser = new Usuario();
         mockUser.setUsername(ASH_USERNAME);
 
+        // AQUÍ ESTABA EL ERROR: Le hemos quitado las comillas a SPRITE_IMG
         Map<String, Object> mockPokemon = Map.of(
                 "name", PIKACHU_NAME,
                 "id", 25,
-                "SPRITE_IMG", "http://sprite.png");
+                SPRITE_IMG, "http://sprite.png");
 
         when(usuarioRepository.findByUsername(ASH_USERNAME)).thenReturn(Optional.of(mockUser));
         when(busquedaRepository.findByUsuarioOrderByFechaBusquedaDesc(mockUser)).thenReturn(Collections.emptyList());
@@ -81,12 +81,12 @@ class PokemonControllerTest {
 
     @Test
     @WithMockUser(username = ASH_USERNAME)
-    // Sonar Fix: camelCase
     void testIndexConBusquedaYComparacion() throws Exception {
         Usuario mockUser = new Usuario();
 
-        Map<String, Object> mockPokemon1 = Map.of("name", PIKACHU_NAME, "id", 25, "SPRITE_IMG", "url1");
-        Map<String, Object> mockPokemon2 = Map.of("name", CHARMANDER_NAME, "id", 4, "SPRITE_IMG", "url2");
+        // AQUÍ ESTABA EL ERROR: Le hemos quitado las comillas a SPRITE_IMG
+        Map<String, Object> mockPokemon1 = Map.of("name", PIKACHU_NAME, "id", 25, SPRITE_IMG, "url1");
+        Map<String, Object> mockPokemon2 = Map.of("name", CHARMANDER_NAME, "id", 4, SPRITE_IMG, "url2");
 
         when(usuarioRepository.findByUsername(ASH_USERNAME)).thenReturn(Optional.of(mockUser));
         when(pythonApiClient.getPokemon(PIKACHU_NAME)).thenReturn(mockPokemon1);

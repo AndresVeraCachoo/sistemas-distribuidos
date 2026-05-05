@@ -3,6 +3,7 @@ package com.practica2.frontend.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
@@ -16,6 +17,10 @@ public class PythonApiClient {
 
     private static final Logger logger = LoggerFactory.getLogger(PythonApiClient.class);
     private static final String ERROR_KEY = "error";
+
+    // ¡AQUÍ ESTÁ LA MAGIA! Leemos la variable del application.properties
+    @Value("${api.python.url}")
+    private String apiUrl;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -35,7 +40,8 @@ public class PythonApiClient {
             return respuestaError;
         }
 
-        String url = "http://localhost:5000/api/pokemon/" + nombrePokemon.toLowerCase();
+        // ¡CORRECCIÓN! Usamos la variable 'apiUrl' en lugar de "http://localhost:5000"
+        String url = apiUrl + "/api/pokemon/" + nombrePokemon.toLowerCase();
 
         try {
             return restTemplate.getForObject(url, Map.class);

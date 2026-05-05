@@ -12,7 +12,7 @@ on:
       - "Practica-2/**"
 
 jobs:
-  # Testear la API de Python
+  # Testear la API de Python (Unitarios)
   test-python:
     name: Tests de Pokemon API (Python)
     runs-on: ubuntu-latest
@@ -33,7 +33,7 @@ jobs:
           pip install -r requirements.txt
           python -m pytest
 
-  # Testear la Webapp de Java
+  # Testear la Webapp de Java (Unitarios)
   test-java:
     name: Tests de Webapp (Java)
     runs-on: ubuntu-latest
@@ -53,3 +53,38 @@ jobs:
         run: |
           chmod +x mvnw
           ./mvnw clean test
+
+  # Testear el Sistema Completo con Postman (E2E)
+  test-e2e-postman:
+    name: Tests E2E con Postman y Docker
+    needs: [test-python, test-java] # ¡CLAVE! Solo se ejecuta si los unitarios pasan
+    runs-on: ubuntu-latest
+    # Establecemos el directorio de trabajo por defecto para todos los pasos de este job
+    defaults:
+      run:
+        working-directory: ./Practica-2
+        
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Levantar contenedores Docker
+        run: docker-compose up -d --build
+
+      - name: Esperar a que los servicios estén listos
+        run: sleep 15
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar Newman (CLI de Postman)
+        run: npm install -g newman
+
+      - name: Ejecutar Tests de Integración
+        run: newman run postman/collection/PokeApp_API_Tests.json
+
+      - name: Apagar y limpiar contenedores Docker
+        if: always() # Garantiza que se apaguen incluso si el test de Postman falla
+        run: docker-compose down

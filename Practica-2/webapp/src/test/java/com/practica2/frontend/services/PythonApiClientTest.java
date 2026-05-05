@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PythonApiClientTest {
 
-    // Sonar Fix: Extracción a constante
+    // Extracción a constante
     private static final String ERROR_KEY = "error";
     private static final String PIKACHU_NAME = "pikachu";
 
