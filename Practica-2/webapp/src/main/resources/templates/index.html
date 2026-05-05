@@ -6,14 +6,17 @@
 
   <link rel="icon" type="image/x-icon" href="/img/favicon.ico?v=2">
   
+  <!-- Hojas de estilo originales de tu proyecto -->
   <link rel="stylesheet" th:href="@{/css/global.css}" />
   <link rel="stylesheet" th:href="@{/css/navbar.css}" />
   <link rel="stylesheet" th:href="@{/css/components.css}" />
   <link rel="stylesheet" th:href="@{/css/pokemon.css}" />
   
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-HnI1yA/2d8tE72P9f1R3eHkV/hT1D2o0D0Y5k1vj2tP6P0f9p1z2b3c4d5e6f7g8" crossorigin="anonymous"></script>
+  <!-- CDN de Chart.js SIN el atributo 'integrity' para evitar el bloqueo del navegador -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
+  <!-- BARRA DE NAVEGACIÓN -->
   <header class="navbar">
     <div class="logo">PokeApp</div>
     <nav class="nav-links">
@@ -31,24 +34,27 @@
     </nav>
   </header>
 
+  <!-- CONTENEDOR PRINCIPAL -->
   <main th:class="${pokemon2 != null} ? 'container arena-container' : 'container'">
     <h1>Buscador de Pokémon</h1>
     
+    <!-- BUSCADOR PRINCIPAL -->
     <form th:action="@{/}" method="get" class="search-box">
       <label for="name" style="display:none;">Buscar Pokémon</label>
       <input type="text" id="name" name="name" placeholder="Ej: mewtwo, bulbasaur..." list="pokemon-list" autocomplete="off" required />
-      
       <datalist id="pokemon-list"></datalist>
-      
       <button type="submit" class="btn-search">Buscar Pokémon</button>
     </form>
 
+    <!-- SECCIÓN DE RESULTADOS -->
     <section th:if="${pokemon != null}" class="results">
       
+      <!-- Manejo de errores de búsqueda del primer Pokémon -->
       <div th:if="${pokemon.containsKey('error')}" class="card error-card">
         <h3 th:text="${pokemon.get('error')}">Error en la consulta</h3>
       </div>
 
+      <!-- VISTA INDIVIDUAL (Cuando solo hay 1 Pokémon buscado) -->
       <div th:if="${!pokemon.containsKey('error') and pokemon2 == null}" class="card pokemon-card">
         <img th:src="${pokemon.get('sprite')}" th:alt="${pokemon.get('name')}">
         <h2 th:text="${pokemon.get('name')} + ' (#' + ${pokemon.get('id')} + ')'">Nombre</h2>
@@ -62,6 +68,7 @@
 
         <hr style="margin: 30px 0; border: 0; border-top: 2px dashed #d0d0d0;">
         
+        <!-- Formulario para iniciar el combate -->
         <h3 class="auth-hint">VS Batalla Comparativa</h3>
         <form th:action="@{/}" method="get" class="search-box mt-10">
           <input type="hidden" name="name" th:value="${pokemon.get('name')}">
@@ -71,28 +78,35 @@
         </form>
       </div>
 
+      <!-- Manejo de errores del segundo Pokémon -->
       <div th:if="${pokemon2 != null and pokemon2.containsKey('error')}" class="card error-card">
         <h3 th:text="'Error en rival: ' + ${pokemon2.get('error')}">Error</h3>
         <a href="/" style="color: #c62828; font-family: 'Press Start 2P', cursive; font-size: 0.6rem;">Volver</a>
       </div>
 
+      <!-- VISTA DE COMBATE (Cuando hay 2 Pokémon validos) -->
+      <!-- Usa la clase .comparison-container de tu pokemon.css original -->
       <div th:if="${pokemon2 != null and !pokemon2.containsKey('error')}" class="comparison-container">
         
+        <!-- POKÉMON 1 (Izquierda) -->
         <div class="card pokemon-card" style="border-color: #3498db;">
           <img th:src="${pokemon.get('sprite')}" th:alt="${pokemon.get('name')}">
           <h2 th:text="${pokemon.get('name')}">Nombre 1</h2>
         </div>
 
-        <!-- SOLUCIÓN AL GRÁFICO: Se fuerza la posición relativa y una altura mínima para que Chart.js pueda dibujarse -->
-        <div class="radar-card" style="position: relative; width: 100%; min-height: 320px; display: flex; justify-content: center; align-items: center;">
+        <!-- GRÁFICO HEXAGONAL (Centro) -->
+        <!-- Usa la clase .radar-chart-wrapper de tu pokemon.css -->
+        <div class="radar-card radar-chart-wrapper">
           <canvas id="radarChart"></canvas>
         </div>
 
+        <!-- POKÉMON 2 (Derecha) -->
         <div class="card pokemon-card" style="border-color: #e74c3c;">
           <img th:src="${pokemon2.get('sprite')}" th:alt="${pokemon2.get('name')}">
           <h2 th:text="${pokemon2.get('name')}">Nombre 2</h2>
         </div>
 
+        <!-- TABLA COMPARATIVA (Abajo) -->
         <div class="comparison-table-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 20px;">
           <table class="comparison-table" style="width: 100%; max-width: 600px; text-align: center;">
             <thead>
@@ -125,7 +139,9 @@
   <script th:inline="javascript">
     /*<![CDATA[*/
     
-    // 1. MOTOR DE AUTOCOMPLETADO
+    // ==========================================
+    // 1. MOTOR DE AUTOCOMPLETADO DE BÚSQUEDA
+    // ==========================================
     document.addEventListener('DOMContentLoaded', function() {
         let todosLosPokemon = [];
         const dataList = document.getElementById('pokemon-list');
@@ -158,58 +174,70 @@
         });
     });
 
-    // 2. MOTOR DEL GRÁFICO DE COMBATE
-    var p1 = /*[[${pokemon}]]*/ null;
-    var p2 = /*[[${pokemon2}]]*/ null;
+    // ==========================================
+    // 2. MOTOR DEL GRÁFICO DE COMBATE (Chart.js)
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Datos inyectados por Thymeleaf desde Java
+        var p1 = /*[[${pokemon}]]*/ null;
+        var p2 = /*[[${pokemon2}]]*/ null;
 
-    if (p1 && p2 && !p1.error && !p2.error) {
-        // Asegurarse de que el DOM está completamente cargado antes de pintar
-        document.addEventListener('DOMContentLoaded', function() {
+        // Solo dibujar si ambos Pokémon existen y no hay errores
+        if (p1 && p2 && !p1.error && !p2.error && p1.stats && p2.stats) {
             var canvas = document.getElementById('radarChart');
+            
             if(canvas) {
                 var ctx = canvas.getContext('2d');
                 var labels = Object.keys(p1.stats);
                 
+                // Configuración de fuentes por defecto para Chart.js
                 Chart.defaults.font.family = "'VT323', monospace";
-                Chart.defaults.font.size = 16;
+                Chart.defaults.font.size = 14;
 
-                const miGrafico = new Chart(ctx, {
+                // FIX SONARLINT: Se quita 'const miGrafico =' ya que la variable no se usaba
+                new Chart(ctx, {
                     type: 'radar',
                     data: {
                         labels: labels.map(l => l.toUpperCase()),
-                        datasets: [{
-                            label: p1.name.toUpperCase(), 
-                            data: Object.values(p1.stats),
-                            backgroundColor: 'rgba(52, 152, 219, 0.4)', 
-                            borderColor: 'rgba(52, 152, 219, 1)',
-                            pointBackgroundColor: 'rgba(52, 152, 219, 1)', 
-                            borderWidth: 3
-                        }, {
-                            label: p2.name.toUpperCase(), 
-                            data: Object.values(p2.stats),
-                            backgroundColor: 'rgba(231, 76, 60, 0.4)', 
-                            borderColor: 'rgba(231, 76, 60, 1)',
-                            pointBackgroundColor: 'rgba(231, 76, 60, 1)', 
-                            borderWidth: 3
-                        }]
+                        datasets: [
+                            {
+                                label: p1.name.toUpperCase(), 
+                                data: Object.values(p1.stats),
+                                backgroundColor: 'rgba(52, 152, 219, 0.4)', // Azul transparente
+                                borderColor: 'rgba(52, 152, 219, 1)',
+                                pointBackgroundColor: 'rgba(52, 152, 219, 1)', 
+                                borderWidth: 3
+                            }, 
+                            {
+                                label: p2.name.toUpperCase(), 
+                                data: Object.values(p2.stats),
+                                backgroundColor: 'rgba(231, 76, 60, 0.4)', // Rojo transparente
+                                borderColor: 'rgba(231, 76, 60, 1)',
+                                pointBackgroundColor: 'rgba(231, 76, 60, 1)', 
+                                borderWidth: 3
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: false, // Permite que el gráfico se adapte al contenedor padre
                         scales: {
                             r: {
+                                beginAtZero: true,
                                 angleLines: { color: 'rgba(0, 0, 0, 0.2)' },
                                 grid: { color: 'rgba(0, 0, 0, 0.2)' },
-                                pointLabels: { font: { family: "'Press Start 2P', cursive", size: 10 } },
-                                ticks: { display: false } 
+                                pointLabels: { font: { size: 12 } },
+                                ticks: { display: false } // Ocultar los números de los ejes para que quede más limpio
                             }
                         },
-                        plugins: { legend: { position: 'bottom', labels: { font: { family: "'Press Start 2P', cursive", size: 12 } } } }
+                        plugins: { 
+                            legend: { position: 'bottom' } 
+                        }
                     }
                 });
             }
-        });
-    }
+        }
+    });
     /*]]>*/
   </script>
 </body>

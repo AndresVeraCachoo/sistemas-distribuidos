@@ -32,13 +32,6 @@
   text-align: left;
 }
 
-.comparison-container {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr;
-  gap: 15px;
-  margin-top: 20px;
-  align-items: stretch;
-}
 .comparison-table {
   width: 100%;
   border-collapse: collapse;
@@ -102,4 +95,29 @@
   vertical-align: middle;
   margin-right: 10px;
   image-rendering: pixelated;
+}
+
+/* 1. La cuadrícula principal (Distribución 25% - 50% - 25%) */
+.comparison-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr; /* El del medio es el doble de grande */
+    gap: 20px;
+    align-items: center; 
+    width: 100%;
+}
+
+/* 2. El contenedor de la gráfica */
+.radar-chart-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 350px; /* Le damos altura para que Chart.js tenga espacio */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 3. Asegurarnos de que el Canvas de Chart.js respeta los bordes */
+.radar-chart-wrapper canvas {
+    max-width: 100% !important;
+    max-height: 350px !important;
 }
