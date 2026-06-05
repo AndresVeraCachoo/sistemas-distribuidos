@@ -12,6 +12,14 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-broker
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   api-python:
     build: 
       context: ./pokemon-api
@@ -25,8 +33,27 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./pokemon-api/src:/app/src
     depends_on:
       - db
+
+  email-worker:
+    build:
+      context: ./pokemon-api
+    container_name: python-email-worker
+    restart: always
+    command: python src/email_worker.py
+    environment:
+      - PYTHONPATH=/app
+      - RABBITMQ_HOST=rabbitmq
+      - EMAIL_SENDER=${EMAIL_SENDER}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+    volumes:
+      - ./pokemon-api/src:/app/src
+    depends_on:
+      - rabbitmq
 
   frontend:
     build: 
@@ -39,10 +66,13 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - API_PYTHON_URL=http://api-python:5000  
-      - APP_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD}
+      - API_PYTHON_URL=http://api-python:5000
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
     depends_on:
       - db
       - api-python
+      - rabbitmq
+
 volumes:
   pgdata:

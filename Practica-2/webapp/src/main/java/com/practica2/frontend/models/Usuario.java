@@ -24,6 +24,5 @@ public class Usuario {
     private String nombre;
     private boolean esProtegido = false;
 
-    // Guardamos la foto elegida (por defecto el icono gris)
     private String avatarUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
 }

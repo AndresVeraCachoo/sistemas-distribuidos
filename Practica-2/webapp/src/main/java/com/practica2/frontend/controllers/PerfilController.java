@@ -4,6 +4,7 @@ import com.practica2.frontend.models.Busqueda;
 import com.practica2.frontend.models.Usuario;
 import com.practica2.frontend.repositories.BusquedaRepository;
 import com.practica2.frontend.repositories.UsuarioRepository;
+import com.practica2.frontend.services.EmailPublisherService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -21,12 +22,14 @@ public class PerfilController {
     private final UsuarioRepository usuarioRepository;
     private final BusquedaRepository busquedaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailPublisherService emailPublisherService;
 
     public PerfilController(UsuarioRepository usuarioRepository, BusquedaRepository busquedaRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, EmailPublisherService emailPublisherService) {
         this.usuarioRepository = usuarioRepository;
         this.busquedaRepository = busquedaRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailPublisherService = emailPublisherService;
     }
 
     @GetMapping("/perfil")
@@ -41,17 +44,14 @@ public class PerfilController {
             @RequestParam String confirmacion, Principal principal) {
         Usuario user = usuarioRepository.findByUsername(principal.getName()).orElseThrow();
 
-        // Verificamos si la contraseña actual coincide con la que hay en la base de
-        // datos
         if (!passwordEncoder.matches(actual, user.getPassword())) {
             return "redirect:/perfil?error=La contraseña actual es incorrecta";
         }
-        // Verificamos que las contraseñas nuevas coincidan entre sí
+        
         if (!nueva.equals(confirmacion)) {
             return "redirect:/perfil?error=Las contraseñas nuevas no coinciden";
         }
 
-        // Guardamos la nueva contraseña de forma segura
         user.setPassword(passwordEncoder.encode(nueva));
         usuarioRepository.save(user);
         return "redirect:/perfil?exito=Contraseña actualizada correctamente";
@@ -74,6 +74,9 @@ public class PerfilController {
 
         // Borramos al usuario
         usuarioRepository.delete(user);
+
+        // Disparamos el mensaje a la cola de RabbitMQ para el worker de Python
+        emailPublisherService.publishGoodbyeEmail(user.getEmail(), user.getNombre());
 
         // Forzamos el cierre de sesión
         request.getSession().invalidate();

@@ -15,13 +15,12 @@ import java.util.List;
 public class DataInitializer implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
-    private final BusquedaRepository busquedaRepository; // AÑADIDO
+    private final BusquedaRepository busquedaRepository; 
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.admin.password}")
     private String adminPassword;
 
-    // AÑADIDO BusquedaRepository AL CONSTRUCTOR
     public DataInitializer(UsuarioRepository usuarioRepository, BusquedaRepository busquedaRepository,
             PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
@@ -38,7 +37,7 @@ public class DataInitializer implements CommandLineRunner {
             List<Busqueda> historial = busquedaRepository.findByUsuarioOrderByFechaBusquedaDesc(admin);
             busquedaRepository.deleteAll(historial);
 
-            // 2. Ahora sí podemos borrar al usuario
+            // Ahora sí podemos borrar al usuario
             usuarioRepository.delete(admin);
         });
 
@@ -49,6 +48,7 @@ public class DataInitializer implements CommandLineRunner {
             ash.setPassword(passwordEncoder.encode(adminPassword));
             ash.setEmail("ash@entrenador.com");
             ash.setNombre("Ash Ketchum");
+            ash.setEmail("ash@pueblopaleta.com");
             ash.setAvatarUrl("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png");
             ash.setEsProtegido(true);
             usuarioRepository.save(ash);

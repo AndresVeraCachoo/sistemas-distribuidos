@@ -23,8 +23,10 @@
   margin: 20px 0;
 }
 
+/* AQUÍ AÑADIMOS EL TIPO EMAIL */
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="email"] {
   padding: 10px;
   font-family: "VT323", monospace;
   font-size: 1.5rem;
@@ -62,8 +64,11 @@ input[type="password"] {
   font-family: "Press Start 2P", cursive;
   font-size: 0.6rem;
 }
+
+/* AQUÍ TAMBIÉN AÑADIMOS EL TIPO EMAIL */
 .form-group input[type="text"],
-.form-group input[type="password"] {
+.form-group input[type="password"],
+.form-group input[type="email"] {
   width: 100%;
   box-sizing: border-box;
 }
@@ -115,19 +120,19 @@ input[type="password"] {
   border: 2px solid transparent;
 }
 .alert-error {
-  border-color: #e74c3c;
+  border-color: #8f1204;
   background: #fadbd8;
-  color: #c0392b;
+  color: #8f1204;
 }
 .alert-success {
-  border-color: #27ae60;
+  border-color: #014d21;
   background: #e8f5e9;
-  color: #27ae60;
+  color: #014d21;
 }
 .alert-info {
-  border-color: #3498db;
+  border-color: #09619b;
   background: #e1f5fe;
-  color: #2980b9;
+  color: #09619b;
 }
 
 /* --- PANTALLAS DE LOGIN / REGISTRO --- */

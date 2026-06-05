@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Service
 public class PythonApiClient {
@@ -18,15 +20,20 @@ public class PythonApiClient {
     private static final Logger logger = LoggerFactory.getLogger(PythonApiClient.class);
     private static final String ERROR_KEY = "error";
 
-    // ¡AQUÍ ESTÁ LA MAGIA! Leemos la variable del application.properties
+    // Leemos la variable del application.properties
     @Value("${api.python.url}")
     private String apiUrl;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    public PythonApiClient(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public PythonApiClient() {
+        // Configuramos el tiempo de espera (Timeout) para dar margen a la IA
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);  // 5 segundos para establecer conexión con Python
+        factory.setReadTimeout(60000);    // 60 segundos de paciencia para recibir el análisis de Gemini
+        
+        this.restTemplate = new RestTemplate(factory);
         this.objectMapper = new ObjectMapper();
     }
 
@@ -40,7 +47,6 @@ public class PythonApiClient {
             return respuestaError;
         }
 
-        // ¡CORRECCIÓN! Usamos la variable 'apiUrl' en lugar de "http://localhost:5000"
         String url = apiUrl + "/api/pokemon/" + nombrePokemon.toLowerCase();
 
         try {
@@ -91,6 +97,51 @@ public class PythonApiClient {
         } catch (Exception genericException) {
             logger.error("Error grave en el cliente", genericException);
             respuestaError.put(ERROR_KEY, "El servidor usó Autodestrucción. Error catastrófico.");
+            return respuestaError;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> analizarEquipo(List<String> equipo) {
+        Map<String, Object> respuestaError = new HashMap<>();
+
+        try {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("equipo", equipo);
+
+            String endpoint = apiUrl + "/api/team-analysis";
+            return restTemplate.postForObject(endpoint, requestBody, Map.class);
+
+        } catch (HttpStatusCodeException httpException) {
+            logger.error("Error HTTP del API Python en análisis: {}", httpException.getStatusCode());
+            try {
+                String responseBody = httpException.getResponseBodyAsString();
+                Map<String, Object> errorJson = objectMapper.readValue(responseBody, Map.class);
+                
+                String tipoError = (String) errorJson.get("error_type");
+                Boolean esCritico = (Boolean) errorJson.get("critical");
+
+                if (Boolean.TRUE.equals(esCritico)) {
+                    respuestaError.put(ERROR_KEY, "El sistema de análisis central ha fallado crítico.");
+                } else if ("ExternalAPIError".equals(tipoError)) {
+                    respuestaError.put(ERROR_KEY, "El Profesor Oak (IA) está ocupado o no responde en este momento.");
+                } else {
+                    respuestaError.put(ERROR_KEY, "Ha ocurrido un error al procesar el equipo.");
+                }
+            } catch (Exception parseException) {
+                logger.error("Fallo al traducir el JSON de error", parseException);
+                respuestaError.put(ERROR_KEY, "Error de comunicación con el Centro Pokémon central.");
+            }
+            return respuestaError;
+
+        } catch (ResourceAccessException networkException) {
+            logger.error("Error de Red o Timeout", networkException);
+            respuestaError.put(ERROR_KEY, "No hay conexión con el servidor de análisis o se superó el límite de tiempo.");
+            return respuestaError;
+
+        } catch (Exception genericException) {
+            logger.error("Error grave en el cliente", genericException);
+            respuestaError.put(ERROR_KEY, "Error catastrófico en el sistema de análisis.");
             return respuestaError;
         }
     }
